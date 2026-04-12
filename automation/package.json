@@ -1,0 +1,25 @@
+{
+  "name": "quality-autopilot-automation",
+  "version": "1.0.0",
+  "description": "BDD+POM Automation Framework using Playwright and Cucumber",
+  "scripts": {
+    "test": "cucumber-js -r step_definitions/**/*.ts -r hooks/**/*.ts --require-module ts-node/register",
+    "test:headed": "cucumber-js -r step_definitions/**/*.ts -r hooks/**/*.ts --require-module ts-node/register --headed",
+    "test:debug": "cucumber-js -r step_definitions/**/*.ts -r hooks/**/*.ts --require-module ts-node/register --debug",
+    "report": "cucumber-js -r step_definitions/**/*.ts -r hooks/**/*.ts --require-module ts-node/register --format json:reports/cucumber-report.json"
+ },
+  "dependencies": {
+    "@cucumber/cucumber": "^12.8.0",
+    "@playwright/test": "^1.42.0",
+    "@types/node": "^20.11.0",
+    "cross-env": "^7.0.3",
+    "cucumber-html-reporter": "^6.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "eslint": "^8.56.0"
+  }
+}

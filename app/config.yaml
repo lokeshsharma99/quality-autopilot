@@ -1,0 +1,15 @@
+# ---------------------------------------------------------------------------
+# Quality Autopilot — Agent Quick Prompts
+# ---------------------------------------------------------------------------
+# These prompts appear in the Agent UI dropdown for quick access.
+# Format: agent_id -> list of prompt strings.
+
+architect:
+  - "Analyze this Jira ticket and produce an Execution Plan: {ticket_url}"
+  - "Which Page Objects will be affected by this change?"
+  - "Is this a new feature or a modification to existing coverage?"
+
+engineer:
+  - "Generate a Page Object Model for the login page"
+  - "Write step definitions for the checkout flow"
+  - "Check the Site Manifesto for available locators on the dashboard"

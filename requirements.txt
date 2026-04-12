@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# Quality Autopilot — Requirements
+# ---------------------------------------------------------------------------
+# Generated from pyproject.toml. Keep in sync.
+# To regenerate: uv pip compile pyproject.toml -o requirements.txt
+# ---------------------------------------------------------------------------
+
+agno[os]
+openai
+anthropic
+mcp
+pgvector
+psycopg[binary]
+sqlalchemy
+PyGithub
+pydantic>=2.0
+
+# Discovery Agent — UI Crawler
+httpx
+beautifulsoup4
+curl_cffi
+
+# Engineer Agent — Playwright MCP
+requests
+
+# Knowledge Base Chunkers
+chonkie[semantic]
+unstructured
+wikipedia

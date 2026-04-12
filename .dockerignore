@@ -1,0 +1,48 @@
+# Quality Autopilot — .dockerignore
+# Exclude reference repos and non-essential files from Docker build context.
+
+# Reference repositories (not production code)
+reference/
+
+# Git
+.git/
+.github/
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation (instruction files stay, but aren't needed in image)
+AGENTS.md
+CLAUDE.md
+CHECKLIST.md
+.instructions.md
+.cursorrules
+.clinerules
+README.md
+
+# Docker
+compose.yaml
+Dockerfile
+.dockerignore
+
+# Test output
+test-output/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment (secrets)
+.env
+.env.*
+!example.env

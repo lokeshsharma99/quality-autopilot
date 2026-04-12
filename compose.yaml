@@ -1,0 +1,118 @@
+# ---------------------------------------------------------------------------
+# Quality Autopilot — Docker Compose
+# ---------------------------------------------------------------------------
+# Services:
+#   qap-db   — PostgreSQL 18 with pgvector (agent memory + knowledge)
+#   qap-api  — Agno AgentOS runtime (FastAPI on port 8000)
+#   qap-ui   — Agent UI (Next.js on port 3000)
+#   qap-playwright — Sandboxed Playwright runner (on-demand)
+#   qap-playwright-mcp — Playwright MCP server for browser automation
+# ---------------------------------------------------------------------------
+
+services:
+  qap-db:
+    image: agnohq/pgvector:18
+    container_name: qap-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-ai}
+      POSTGRES_PASSWORD: ${DB_PASS:-ai}
+      POSTGRES_DB: ${DB_DATABASE:-ai}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - qap-net
+
+  qap-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME:-quality-autopilot}:${IMAGE_TAG:-latest}
+    container_name: qap-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload: mount source code
+      - .:/app
+      # Test output from Playwright runs
+      - test-output:/app/test-output
+    environment:
+      - RUNTIME_ENV=dev
+      - AGNO_DEBUG=True
+      - PYTHONPATH=/app
+      - AGENTOS_URL=http://127.0.0.1:8000
+      # Database
+      - DB_HOST=qap-db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-ai}
+      - DB_PASS=${DB_PASS:-ai}
+      - DB_DATABASE=${DB_DATABASE:-ai}
+      - WAIT_FOR_DB=True
+      - PRINT_ENV_ON_LOAD=${PRINT_ENV_ON_LOAD:-False}
+      # API Keys (optional — only needed if using OpenAI/Anthropic directly)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      # Ollama Cloud (Primary LLM)
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-gpt-oss:120b-cloud}
+      # AUT (Application Under Test)
+      - AUT_BASE_URL=${AUT_BASE_URL:-https://demo.nopcommerce.com/}
+      - AUT_AUTH_USER=${AUT_AUTH_USER:-}
+      - AUT_AUTH_PASS=${AUT_AUTH_PASS:-}
+      # GitHub
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    depends_on:
+      - qap-db
+      - qap-playwright-mcp
+    networks:
+      - qap-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  qap-ui:
+    build:
+      context: ./reference/agent-ui
+      dockerfile: Dockerfile
+    container_name: qap-ui
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://qap-api:8000
+    depends_on:
+      - qap-api
+    networks:
+      - qap-net
+
+  qap-playwright:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    container_name: qap-playwright
+    working_dir: /tests
+    volumes:
+      - test-output:/tests
+    network_mode: "none"
+    profiles:
+      - runner
+
+  qap-playwright-mcp:
+    image: node:20-alpine
+    container_name: qap-playwright-mcp
+    command: sh -c "apk add --no-cache chromium && mkdir -p /opt/google/chrome && ln -sf /usr/bin/chromium /opt/google/chrome/chrome && npx @playwright/mcp@latest --port 8931 --host 0.0.0.0 --allowed-hosts '*' --headless"
+    restart: unless-stopped
+    ports:
+      - "8931:8931"
+    networks:
+      - qap-net
+
+networks:
+  qap-net:
+
+volumes:
+  pgdata:
+  test-output:

@@ -1,0 +1,44 @@
+# Quality Autopilot — .gitignore
+
+# Environment
+.env
+.env.*
+!example.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Docker volumes (local)
+pgdata/
+
+# Test output
+test-output/
+*.trace.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agno
+.agno/
+
+# Reference (embedded git repositories)
+reference/
