@@ -57,7 +57,7 @@ class HealingPatch(BaseModel):
                 "agent_id": "medic",
                 "rca_report_id": "rca-001",
                 "status": "pending",
-                "pr_url": null
+                "pr_url": None
             }
         }
     

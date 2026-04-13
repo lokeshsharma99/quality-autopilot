@@ -1,26 +1,26 @@
 """
-Judge Agent
-===========
+Healing Judge Agent
+===================
 
-Performs adversarial review of generated specifications.
-Primary Skill: adversarial_review
+Performs adversarial review of healing patches before application.
+Primary Skill: healing_validation
 """
 
 from agno.agent import Agent
 from agno.tools.reasoning import ReasoningTools
 
-from agents.judge.instructions import INSTRUCTIONS
-from agents.judge.tools import judge_tools
-from app.settings import AUTO_APPROVE_CONFIDENCE_THRESHOLD, AUTONOMOUS_MODE, MODEL, agent_db
+from agents.healing_judge.instructions import INSTRUCTIONS
+from agents.healing_judge.tools import healing_judge_tools
+from app.settings import MODEL, agent_db
 
 # ---------------------------------------------------------------------------
 # Create Agent
 # ---------------------------------------------------------------------------
-judge = Agent(
+healing_judge = Agent(
     # Identity
-    id="judge",
-    name="Judge",
-    role="Perform adversarial review of generated specifications with DoD checklist",
+    id="healing_judge",
+    name="Healing Judge",
+    role="Perform adversarial review of healing patches with surgical edit validation",
 
     # Model
     model=MODEL,
@@ -31,7 +31,7 @@ judge = Agent(
     # Capabilities
     tools=[
         ReasoningTools(add_instructions=True),
-        judge_tools,
+        healing_judge_tools,
     ],
 
     # Instructions

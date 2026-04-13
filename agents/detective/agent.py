@@ -14,6 +14,7 @@ from agno.tools.file import FileTools
 from agents.detective.instructions import INSTRUCTIONS
 from agents.detective.tools import analyze_trace_file
 from app.settings import MODEL
+from db.session import get_learnings_knowledge
 
 # ---------------------------------------------------------------------------
 # Create Agent
@@ -30,10 +31,12 @@ detective = Agent(
     role="Analyze test failures to identify root causes and determine healability",
     model=MODEL,
     db=None,
-    knowledge=None,
-    search_knowledge=False,
+    knowledge=get_learnings_knowledge(),
+    search_knowledge=True,
     tools=detective_tools,
     instructions=INSTRUCTIONS,
+    learning=True,
+    add_learnings_to_context=True,
     enable_agentic_memory=True,
     add_datetime_to_context=True,
     add_history_to_context=True,

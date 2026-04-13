@@ -89,6 +89,20 @@ def create_codebase_knowledge() -> Knowledge:
     return create_knowledge("Codebase KB", "codebase_vectors")
 
 
+def create_learnings_knowledge() -> Knowledge:
+    """Create the Learnings knowledge base for persistent agent insights.
+
+    Stores:
+    - Stable Selector insights from successful healing
+    - Common failure patterns from Detective analysis
+    - Framework conventions from codebase analysis
+
+    Returns:
+        Configured Knowledge instance for storing agent learnings.
+    """
+    return create_knowledge("Agent Learnings KB", "qap_learnings_vectors")
+
+
 # ---------------------------------------------------------------------------
 # Shared Knowledge Base Instances
 # ---------------------------------------------------------------------------
@@ -96,6 +110,7 @@ def create_codebase_knowledge() -> Knowledge:
 _site_manifesto_knowledge: Knowledge | None = None
 _automation_scaffold_knowledge: Knowledge | None = None
 _codebase_knowledge: Knowledge | None = None
+_learnings_knowledge: Knowledge | None = None
 
 
 def get_site_manifesto_knowledge() -> Knowledge:
@@ -132,6 +147,18 @@ def get_codebase_knowledge() -> Knowledge:
     if _codebase_knowledge is None:
         _codebase_knowledge = create_codebase_knowledge()
     return _codebase_knowledge
+
+
+def get_learnings_knowledge() -> Knowledge:
+    """Get or create the shared Learnings knowledge base instance.
+
+    Returns:
+        Shared Knowledge instance for storing agent learnings.
+    """
+    global _learnings_knowledge
+    if _learnings_knowledge is None:
+        _learnings_knowledge = create_learnings_knowledge()
+    return _learnings_knowledge
 
 
 def create_used_data_table():

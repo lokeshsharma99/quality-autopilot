@@ -67,6 +67,12 @@ def get_model(model_id: str | None = None) -> OpenAILike:
 RUNTIME_ENV = getenv("RUNTIME_ENV", "dev")
 
 # ---------------------------------------------------------------------------
+# Autonomous Mode Configuration
+# ---------------------------------------------------------------------------
+AUTONOMOUS_MODE = getenv("AUTONOMOUS_MODE", "false").lower() in ["true", "1", "yes"]
+AUTO_APPROVE_CONFIDENCE_THRESHOLD = float(getenv("AUTO_APPROVE_CONFIDENCE_THRESHOLD", "90.0"))
+
+# ---------------------------------------------------------------------------
 # AUT Configuration
 # ---------------------------------------------------------------------------
 AUT_BASE_URL = getenv("AUT_BASE_URL", "https://gds-demo-app.vercel.app/")
