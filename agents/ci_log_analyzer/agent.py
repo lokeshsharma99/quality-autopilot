@@ -12,11 +12,13 @@ import logging
 from agno.agent import Agent
 from agno.approval import approval
 from agno.guardrails import PIIDetectionGuardrail, PromptInjectionGuardrail
-from agno.tools.mcp import MCPTools
 from agno.tools.reasoning import ReasoningTools
 
 from agents.ci_log_analyzer.instructions import INSTRUCTIONS
-from agents.ci_log_analyzer.tools import create_work_item
+from agents.ci_log_analyzer.tools import (
+    create_work_item,
+    get_pipeline_runs,
+)
 from app.settings import MODEL, agent_db
 from db.session import get_rca_knowledge
 
@@ -36,11 +38,6 @@ else:
 # ---------------------------------------------------------------------------
 # Build Tools List
 # ---------------------------------------------------------------------------
-# Azure MCP Tools for Azure DevOps integration
-azure_mcp_tools = MCPTools(
-    url="http://qap-azure-mcp:8932/sse",
-)
-
 tools = [
     ReasoningTools(
         enable_think=True,
@@ -48,7 +45,7 @@ tools = [
         add_instructions=True,
         add_few_shot=True,
     ),
-    azure_mcp_tools,
+    get_pipeline_runs,
     create_work_item,
 ]
 
