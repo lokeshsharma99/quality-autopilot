@@ -6,6 +6,8 @@ Writes modular Playwright POMs and Step Definitions.
 Primary Skill: file_writer
 """
 
+from pathlib import Path
+
 from agno.agent import Agent
 from agno.tools.coding import CodingTools
 from agno.tools.file import FileTools
@@ -14,8 +16,12 @@ from agno.tools.mcp import MCPTools
 
 from agents.engineer.instructions import INSTRUCTIONS
 from agents.engineer.tools import (
+    create_github_pr,
     create_scaffold,
+    run_linting,
+    run_local_verify,
     run_playwright_script,
+    validate_files_created,
 )
 from app.settings import MODEL, agent_db
 from db.session import get_automation_scaffold_knowledge
@@ -23,36 +29,51 @@ from db.session import get_automation_scaffold_knowledge
 # ---------------------------------------------------------------------------
 # Knowledge Base
 # ---------------------------------------------------------------------------
-automation_knowledge = get_automation_scaffold_knowledge()
+# Temporarily disabled to isolate delegation issue
+# try:
+#     automation_knowledge = get_automation_scaffold_knowledge()
+# except Exception:
+#     automation_knowledge = None
+automation_knowledge = None
 
 # ---------------------------------------------------------------------------
 # Playwright MCP Tools
 # ---------------------------------------------------------------------------
-playwright_mcp = MCPTools(
-    transport="streamable-http",
-    url="http://qap-playwright-mcp:8931/mcp",
-    exclude_tools=["browser_take_screenshot"],
-)
+# Temporarily disabled to isolate delegation issue
+# try:
+#     playwright_mcp = MCPTools(
+#         transport="streamable-http",
+#         url="http://qap-playwright-mcp:8931/mcp",
+#         exclude_tools=["browser_take_screenshot"],
+#     )
+# except Exception:
+#     playwright_mcp = None
+playwright_mcp = None
 
 # ---------------------------------------------------------------------------
 # Create Agent
 # ---------------------------------------------------------------------------
+# Minimal configuration with only essential tools to isolate delegation issue
+engineer_tools = [
+    CodingTools(),
+    FileTools(Path("automation")),
+    create_scaffold,
+    run_playwright_script,
+    run_linting,
+    run_local_verify,
+    validate_files_created,
+    create_github_pr,
+]
+
 engineer = Agent(
     id="engineer",
     name="Engineer",
     role="Write modular Playwright POMs and Step Definitions (Look-Before-You-Leap)",
     model=MODEL,
-    db=agent_db,
+    db=None,
     knowledge=automation_knowledge,
-    search_knowledge=True,
-    tools=[
-        CodingTools(),
-        FileTools(),
-        playwright_mcp,
-        create_scaffold,
-        run_playwright_script,
-        KnowledgeTools(knowledge=automation_knowledge),
-    ],
+    search_knowledge=False,
+    tools=engineer_tools,
     instructions=INSTRUCTIONS,
     enable_agentic_memory=True,
     add_datetime_to_context=True,

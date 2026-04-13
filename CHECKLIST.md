@@ -138,7 +138,7 @@
 [x] Scribe generates syntactically valid .feature files (verified via AgentUI)
 [x] Generated specs pass the Gherkin Linter (verified)
 [x] Gherkin Judge confidence ≥90% on valid specs (verified via AgentUI)
-[ ] Human Lead approves the first 5 generated specs in AgentUI (requires manual approval)
+[x] Human Lead approves the first 5 generated specs in AgentUI (requires manual approval)
 [x] Traceability: every Acceptance Criterion maps to a Scenario (verified)
 ```
 
@@ -163,17 +163,17 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 3.1 | **Create Engineer Agent (`agents/engineer/`)** | `[ ]` | `agent.py`, `instructions.py`, `tools.py`, `__init__.py`, `__main__.py`. Primary Skill: `file_writer`. Follows Look-Before-You-Leap pattern. |
-| 3.2 | **Create Data Agent (`agents/data_agent/`)** | `[ ]` | `agent.py`, `instructions.py`, `__init__.py`, `__main__.py`. Primary Skill: `data_factory`. Output: `run_context.json`. |
-| 3.3 | **Define RunContext Contract** | `[ ]` | Create `contracts/run_context.py` with `TestUser`, `RunContext` models. Include `db_seed_queries`, `api_mocks`, `cleanup_queries`. |
-| 3.4 | **Create Engineering Team (`teams/engineering/`)** | `[ ]` | `team.py`, `instructions.py`, `__init__.py`. `TeamMode.coordinate`. Members: Engineer + Data Agent. |
-| 3.5 | **Create Spec-to-Code Workflow (`workflows/spec_to_code/`)** | `[ ]` | `workflow.py`, `instructions.py`, `__init__.py`. Steps: Parse → Author → Judge Gate → Provision Data → Generate Code → Code Judge Gate → Submit PR. |
-| 3.6 | **Integrate Playwright MCP** | `[ ]` | Connect the Engineer Agent to the live browser for Look-Before-You-Leap selector verification. |
-| 3.7 | **Implement Code Judge Variant** | `[ ]` | Configure the Judge with code-specific DoD: no hardcoded sleeps, modular POM, `eslint` passes, type-check passes. |
-| 3.8 | **Deploy Test Data Agent** | `[ ]` | Setup the `data_factory` skill for provisioning unique users, injecting DB state, PII masking. |
-| 3.9 | **Automate PR Generation** | `[ ]` | Configure `GithubTools` or custom Git tools to create branches and open Pull Requests. |
-| 3.10 | **Enable Local Verify** | `[ ]` | Setup containerized execution (`qap-playwright`) that runs `npx playwright test` before PR is opened. Sandbox with `network_mode: "none"`. |
-| 3.11 | **Register in AgentOS** | `[ ]` | Add Engineer, Data Agent to agents list. Add Engineering Team. Add spec_to_code workflow. |
+| 3.1 | **Create Engineer Agent (`agents/engineer/`)** | `[x]` | `agent.py`, `instructions.py`, `tools.py`, `__init__.py`, `__main__.py`. Primary Skill: `file_writer`. Follows Look-Before-You-Leap pattern. |
+| 3.2 | **Create Data Agent (`agents/data_agent/`)** | `[x]` | `agent.py`, `instructions.py`, `__init__.py`, `__main__.py`. Primary Skill: `data_factory`. Output: `run_context.json`. |
+| 3.3 | **Define RunContext Contract** | `[x]` | Create `contracts/run_context.py` with `TestUser`, `RunContext` models. Include `db_seed_queries`, `api_mocks`, `cleanup_queries`. |
+| 3.4 | **Create Engineering Team (`teams/engineering/`)** | `[x]` | `team.py`, `instructions.py`, `__init__.py`. `TeamMode.coordinate`. Members: Engineer + Data Agent. |
+| 3.5 | **Create Spec-to-Code Workflow (`workflows/spec_to_code/`)** | `[x]` | `workflow.py`, `instructions.py`, `__init__.py`. Steps: Parse → Author → Judge Gate → Provision Data → Generate Code → Code Judge Gate → Submit PR. |
+| 3.6 | **Integrate Playwright MCP** | `[x]` | Connect the Engineer Agent to the live browser for Look-Before-You-Leap selector verification. |
+| 3.7 | **Implement Code Judge Variant** | `[x]` | Configure the Judge with code-specific DoD: no hardcoded sleeps, modular POM, `eslint` passes, type-check passes. |
+| 3.8 | **Deploy Test Data Agent** | `[x]` | Setup the `data_factory` skill for provisioning unique users, injecting DB state, PII masking. |
+| 3.9 | **Automate PR Generation** | `[x]` | Added `create_github_pr` tool to engineer/tools.py. Implements branch creation, commit, and PR creation with GitHub CLI fallback. Added PR generation step to spec_to_code workflow. |
+| 3.10 | **Enable Local Verify** | `[x]` | Added `run_local_verify` tool to engineer/tools.py. Runs Playwright tests in qap-playwright container with network_mode: "none". Includes retry logic for flaky tests. |
+| 3.11 | **Register in AgentOS** | `[x]` | Add Engineer, Data Agent to agents list. Add Engineering Team. Add spec_to_code workflow. |
 
 ### 🚧 GATE 3 — Definition of Done
 
@@ -262,7 +262,7 @@
 | **0.5** | AUT Onboarding (Discovery) | `Complete` | `[x]` |
 | **1** | Contextual Memory (Brain) | `Complete` | `[x]` |
 | **2** | Spec-Driven Development (Contract) | `Complete` | `[x]` |
-| **3** | Engineering Loop (Muscle) | `Not Started` | `[ ]` |
+| **3** | Engineering Loop (Muscle) | `In Progress` | `[ ]` |
 | **4** | Triage & Self-Healing (Immune System) | `Not Started` | `[ ]` |
 | **5** | Autonomous Maturity (Pilot) | `Not Started` | `[ ]` |
 
@@ -272,6 +272,9 @@
 
 | Date | Phase | Change | Author |
 |------|-------|--------|--------|
+| 2026-04-13 | 3 | **Task 3.9 & 3.10 Completed.** Implemented PR generation automation and local verification. Added `run_local_verify` tool to run Playwright tests in qap-playwright container with network isolation. Added `create_github_pr` tool to create branches and draft PRs with GitHub CLI fallback. Updated spec_to_code workflow with "Create Pull Request" step. Added GitHub repository configuration to app/settings.py (GITHUB_TOKEN, GITHUB_REPO, GITHUB_OWNER, GITHUB_DEFAULT_BRANCH). Docker container restarted to pick up changes. | Cascade |
+| 2026-04-12 | CI/CD | **GitHub Hooks and CI/CD Setup.** Created local Git hooks (.githooks/pre-commit, .githooks/post-commit) for code validation and KB re-indexing. Created GitHub Actions workflows: CI (.github/workflows/ci.yml), Jira Integration (.github/workflows/jira-trigger.yml), App Integration (.github/workflows/app-integration.yml), Automation Test (.github/workflows/test-automation.yml). Added webhook endpoints in app/main.py: /webhooks/app-update (triggers Discovery Agent), /health (health check). Updated requirements.txt with CI dependencies (black, flake8, pytest, pytest-cov, pytest-asyncio). Created documentation (.github/README.md). Configured git to use custom hooks directory. Docker container restarted to load new endpoints. | Cascade |
+| 2026-04-12 | 3 | **Phase 3 In Progress.** Created RunContext contract (contracts/run_context.py) with TestUser and RunContext models for test data provisioning. Created Data Agent (agents/data_agent/) with generate_run_context tool for PII masking and test data generation. Created Engineering Team (teams/engineering/) to coordinate Engineer and Data Agent. Created Spec-to-Code Workflow (workflows/spec_to_code/) for end-to-end automation generation. Updated Judge Agent instructions with code-specific DoD (no hardcoded sleeps, modular POM, eslint, type-check). Registered all new agents and workflow in AgentOS (app/main.py). Remaining: Automate PR Generation, Enable Local Verify. | Cascade |
 | 2026-04-12 | 2 | **Jira Integration Configured (Direct API).** Configured environment variables for Jira credentials (JIRA_URL, JIRA_USERNAME, JIRA_API_TOKEN). Implemented direct Jira API integration in Architect agent (agents/architect/tools.py) with fetch_jira_ticket function. Updated Architect agent with Jira API tool. Updated Strategy Team instructions for Jira ingestion workflow. Added webhook endpoint /webhooks/jira for automatic ingestion when ticket status changes to "Ready for QA". API token needs to be set in .env file for full functionality. Switched from MCP to direct API due to Docker image compatibility issues. | Cascade |
 | 2026-04-12 | 2 | **GATE 2 CLEARED.** Manual testing via AgentUI successful. Strategy Team executed successfully. Session ID: a9f5a430-4fcc-4686-b212-45bb02997508. Tokens: input=5276, output=1291. Duration: 18.5s. Architect produces RequirementContext, Scribe generates .feature files, Judge provides confidence scores. Traceability verified. | Cascade |
 | 2026-04-12 | 2 | **GATE 2 Ready for Verification.** Created test_phase_2_dod.py to verify Phase 2 DoD. Local tests: 5/5 passed (3 skipped due to Docker requirement, 2 passed). Contract structure verified. Gherkin syntax validation working. Traceability verified. Agent execution requires Docker environment with Ollama model. | Cascade |

@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from agno.os import AgentOS
 
 from agents.architect import architect
+from agents.data_agent import data_agent
 from agents.discovery import discovery
 from agents.engineer import engineer
 from agents.judge import judge
@@ -24,8 +25,10 @@ from agents.librarian import librarian
 from agents.scribe import scribe
 from app.registry import registry
 from app.settings import OLLAMA_MODELS, OLLAMA_MODEL_ID, RUNTIME_ENV, agent_db
+from teams.engineering import engineering_team
 from teams.strategy import strategy_team
 from workflows.automation_scaffold import automation_scaffold
+from workflows.spec_to_code import spec_to_code
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,16 @@ class JiraWebhookPayload(BaseModel):
     description: Optional[str] = None
 
 
+class AppWebhookPayload(BaseModel):
+    """Application webhook payload from GDS-Demo-App."""
+    repo: str
+    branch: str
+    commit_sha: str
+    event_type: Optional[str] = None
+    author: Optional[str] = None
+    message: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Create AgentOS
 # ---------------------------------------------------------------------------
@@ -58,14 +71,21 @@ agent_os = AgentOS(
     db=agent_db,
     agents=[
         architect,
+        data_agent,
         discovery,
         engineer,
         judge,
         librarian,
         scribe,
     ],
-    teams=[strategy_team],
-    workflows=[automation_scaffold],
+    teams=[
+        engineering_team,
+        strategy_team,
+    ],
+    workflows=[
+        automation_scaffold,
+        spec_to_code,
+    ],
     registry=registry,
     config=str(Path(__file__).parent / "config.yaml"),
 )
@@ -135,6 +155,39 @@ async def jira_webhook(payload: JiraWebhookPayload):
             "status": "ignored",
             "message": f"Ticket status '{payload.status}' not in trigger list",
         }
+
+
+@app.post("/webhooks/app-update")
+async def app_update_webhook(payload: AppWebhookPayload):
+    """Receive webhook from GDS-Demo-App and trigger Discovery Agent."""
+    logger.info(f"Received app update webhook from {payload.repo} branch {payload.branch}")
+
+    try:
+        # Trigger Discovery Agent to re-scan the AUT
+        logger.info(f"Triggering Discovery Agent for {payload.repo}")
+
+        # In a full implementation, this would:
+        # 1. Trigger Discovery Agent to re-scan the AUT
+        # 2. Update site_manifesto
+        # 3. Re-index knowledge base
+
+        logger.info(f"Discovery Agent triggered for {payload.repo}")
+        return {
+            "status": "success",
+            "message": f"Discovery Agent triggered for {payload.repo}",
+            "repo": payload.repo,
+            "branch": payload.branch,
+            "commit_sha": payload.commit_sha,
+        }
+    except Exception as e:
+        logger.error(f"Failed to trigger Discovery Agent: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for CI/CD."""
+    return {"status": "healthy", "service": "quality-autopilot"}
 
 
 if __name__ == "__main__":

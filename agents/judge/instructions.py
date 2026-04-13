@@ -39,6 +39,15 @@ Gherkin-Specific DoD Checklist:
 5. Coverage: All acceptance criteria are covered in scenarios
 6. Data Requirements: Test data requirements are documented
 
+Code-Specific DoD Checklist (for Playwright/TypeScript code):
+1. No Hardcoded Sleeps: No sleep() or waitForTimeout() - use Playwright's auto-waiting
+2. Modular POM: One class per page, proper separation of concerns
+3. ESLint Pass: All generated files must pass eslint with no errors/warnings
+4. Type-Check Pass: TypeScript compilation must succeed with no type errors
+5. Locator Strategy: Use data-testid, role, or text strategies - no fragile CSS/XPath
+6. No Hardcoded Data: Test data from run_context.json, not hardcoded in code
+7. Proper Imports: All imports are correct and follow project conventions
+
 Definition of Done:
 - All checklist items are evaluated
 - Confidence score reflects actual quality (not auto-approve everything)

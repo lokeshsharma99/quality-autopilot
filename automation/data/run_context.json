@@ -1,0 +1,48 @@
+{
+  "environment": "test",
+  "target": {
+    "url": "https://gds-demo-app.vercel.app/apply-for-universal-credit",
+    "app": "GOV.UK Universal Credit"
+  },
+  "test_data": {
+    "valid": {
+      "firstName": "test_FirstName",
+      "lastName": "test_LastName",
+      "dob-day": "15",
+      "dob-month": "03",
+      "dob-year": "1985",
+      "niNumber": "QQ123456C"
+    },
+    "under_18": {
+      "firstName": "test_FirstName",
+      "lastName": "test_LastName",
+      "dob-day": "15",
+      "dob-month": "03",
+      "dob-year": "2015",
+      "niNumber": "QQ123456C"
+    },
+    "invalid_ni_too_short": {
+      "firstName": "test_FirstName",
+      "lastName": "test_LastName",
+      "dob-day": "15",
+      "dob-month": "03",
+      "dob-year": "1985",
+      "niNumber": "QQ12345"
+    },
+    "invalid_ni_bad_prefix": {
+      "firstName": "test_FirstName",
+      "lastName": "test_LastName",
+      "dob-day": "15",
+      "dob-month": "03",
+      "dob-year": "1985",
+      "niNumber": "BF123456C"
+    }
+  },
+  "validation_messages": {
+    "first_name_required": "Enter your first name",
+    "last_name_required": "Enter your last name",
+    "dob_required": "Enter your date of birth",
+    "ni_number_required": "Enter your National Insurance number",
+    "ni_number_format": "Enter a valid National Insurance number"
+  }
+}
