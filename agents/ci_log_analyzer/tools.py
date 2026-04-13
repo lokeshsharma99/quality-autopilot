@@ -53,7 +53,26 @@ def get_pipeline_runs(project: str, pipeline_id: str, top: int = 10) -> str:
         url = f"{AZURE_DEVOPS_URL}/{project}/_apis/pipelines/{pipeline_id}/runs?api-version=7.0&$top={top}"
         response = httpx.get(url, headers=get_auth_headers())
         response.raise_for_status()
-        return response.text
+        
+        # Parse and simplify the response to reduce context window usage
+        import json
+        data = response.json()
+        
+        # Extract only essential fields
+        simplified_runs = []
+        for run in data.get("value", []):
+            simplified_run = {
+                "id": run.get("id"),
+                "name": run.get("name"),
+                "state": run.get("state"),
+                "result": run.get("result"),
+                "createdDate": run.get("createdDate"),
+                "finishedDate": run.get("finishedDate"),
+                "pipeline_name": run.get("pipeline", {}).get("name"),
+            }
+            simplified_runs.append(simplified_run)
+        
+        return json.dumps({"count": len(simplified_runs), "value": simplified_runs}, indent=2)
     except Exception as e:
         return f"Error fetching pipeline runs: {str(e)}"
 
