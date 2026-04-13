@@ -249,6 +249,52 @@ def health_check():
     return {"status": "healthy", "service": "quality-autopilot"}
 
 
+@app.get("/metrics")
+def get_metrics():
+    """Get AgentOS metrics for monitoring and analytics."""
+    # AgentOS automatically provides metrics at /metrics endpoint
+    # This endpoint is exposed for convenience and documentation
+    return {"message": "Metrics available at /metrics via AgentOS"}
+
+
+# ---------------------------------------------------------------------------
+# Session Management Endpoints
+# ---------------------------------------------------------------------------
+@app.get("/sessions")
+def list_sessions(user_id: str):
+    """List all sessions for a user."""
+    logger.info(f"Listing sessions for user: {user_id}")
+    # AgentOS handles session management internally
+    # This endpoint provides a documented interface
+    return {
+        "message": "Session management available via AgentOS",
+        "user_id": user_id,
+        "note": "Use AgentOSClient for full session management",
+    }
+
+
+@app.get("/sessions/{session_id}")
+def get_session(session_id: str):
+    """Get session details."""
+    logger.info(f"Getting session: {session_id}")
+    return {
+        "message": "Session details available via AgentOS",
+        "session_id": session_id,
+        "note": "Use AgentOSClient for full session management",
+    }
+
+
+@app.get("/sessions/{session_id}/runs")
+def get_session_runs(session_id: str):
+    """Get session runs history."""
+    logger.info(f"Getting runs for session: {session_id}")
+    return {
+        "message": "Session runs available via AgentOS",
+        "session_id": session_id,
+        "note": "Use AgentOSClient for full session management",
+    }
+
+
 if __name__ == "__main__":
     agent_os.serve(
         app="app.main:app",

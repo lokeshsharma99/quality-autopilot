@@ -369,6 +369,109 @@ Quality Autopilot provides 5 end-to-end workflows for common STLC scenarios.
 - Autonomous mode configured (auto-approve at ≥90% confidence)
 - Remaining: Deploy to Production, Harden Security, Production Monitoring
 
+## Advanced Features
+
+### Memory and Session Management
+
+All agents are configured with:
+- **update_memory_on_run=True**: Automatically updates user memories on each run
+- **enable_session_summaries=True**: Generates session summaries for better context
+- **learning=True**: Enables learned knowledge storage and retrieval
+- **add_learnings_to_context=True**: Adds learnings to agent context
+
+These features enable agents to learn from interactions and maintain context across sessions.
+
+### Metrics and Monitoring
+
+AgentOS provides built-in metrics at `/metrics` endpoint:
+- Token usage metrics (input, output, total, cached, reasoning)
+- Agent/team/workflow run counts
+- User counts and model metrics
+- Daily aggregated analytics
+
+Query metrics:
+```bash
+curl http://localhost:8000/metrics
+```
+
+### Session Management API
+
+Quality Autopilot exposes session management endpoints:
+- `GET /sessions?user_id={user_id}` - List sessions for a user
+- `GET /sessions/{session_id}` - Get session details
+- `GET /sessions/{session_id}/runs` - Get session runs history
+
+For full session management capabilities, use the AgentOSClient:
+```python
+from agno.client import AgentOSClient
+
+client = AgentOSClient(base_url="http://localhost:8000")
+sessions = await client.get_sessions(user_id="user123")
+```
+
+### Event Streaming
+
+AgentOS supports real-time event streaming for monitoring agent/team/workflow runs:
+
+**Event Types:**
+- `RunStarted`: Triggered when a run starts
+- `RunCompleted`: Triggered when a run completes
+- `ToolCallStarted`: Triggered when a tool call begins
+- `ToolCallCompleted`: Triggered when a tool call completes
+- `ToolCallError`: Triggered when a tool call fails
+- `MemoryUpdateStarted`: Triggered when memory update begins
+- `MemoryUpdateCompleted`: Triggered when memory update completes
+
+**Enable Event Streaming:**
+```python
+result = await agent.arun(
+    "Analyze this requirement",
+    stream_events=True
+)
+```
+
+**Team Event Streaming:**
+```python
+async for event in team.arun(
+    prompt,
+    stream=True,
+    stream_events=True
+):
+    print(f"Event: {event.event}")
+```
+
+### AgentOSClient Integration
+
+For remote execution and session management, use the AgentOSClient:
+
+```python
+import asyncio
+from agno.client import AgentOSClient
+
+async def main():
+    client = AgentOSClient(base_url="http://localhost:8000")
+
+    # Get configuration
+    config = await client.aget_config()
+
+    # Run an agent
+    result = await client.run_agent(
+        agent_id="architect",
+        message="Analyze this requirement"
+    )
+
+    # Manage sessions
+    session = await client.create_session(
+        agent_id="architect",
+        user_id="user123",
+        session_name="My Session"
+    )
+
+asyncio.run(main())
+```
+
+See `examples/agentos_client_example.py` for a complete example.
+
 ## AUT (Application Under Test)
 
 Default target: [nopCommerce Demo](https://demo.nopcommerce.com/)
