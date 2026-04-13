@@ -2,16 +2,22 @@
 Full Lifecycle Workflow
 ========================
 
-End-to-end workflow from requirement to execution/report using teams.
-Coordinates all squads: Strategy, Context, Engineering, Operations.
+End-to-end workflow from requirement to execution/report using individual agents.
+Coordinates all agents: Architect, Scribe, Discovery, Librarian, Engineer, Data Agent, Detective, Medic, Judge.
 """
 
 from agno.workflow import Workflow, Step
 
-from teams.context import context_team
-from teams.engineering import engineering_team
-from teams.operations import operations_team
-from teams.strategy import strategy_team
+from agents.architect import architect
+from agents.data_agent import data_agent
+from agents.detective import detective
+from agents.discovery import discovery
+from agents.engineer import engineer
+from agents.healing_judge import healing_judge
+from agents.judge import judge
+from agents.librarian import librarian
+from agents.medic import medic
+from agents.scribe import scribe
 
 # ---------------------------------------------------------------------------
 # Create Workflow
@@ -22,77 +28,209 @@ full_lifecycle = Workflow(
     steps=[
         Step(
             name="Requirement Analysis",
-            agent=strategy_team,
-            description="""As the Strategy Team (Architect + Scribe), analyze requirements and generate specifications.
+            agent=architect,
+            description="""As the Architect, analyze requirements and generate RequirementContext.
 
 Input: Jira ticket ID or requirement description provided in workflow input
 
 Your task:
-1. Architect: Fetch Jira ticket, analyze requirements, extract acceptance criteria, generate RequirementContext
-2. Scribe: Convert RequirementContext to GherkinSpec with scenarios and data requirements
-3. Judge: Review GherkinSpec against DoD checklist (confidence ≥90% to proceed)
+1. Fetch Jira ticket details if a ticket ID is provided
+2. Analyze requirements and extract acceptance criteria
+3. Identify affected Page Objects by querying knowledge base
+4. Generate RequirementContext with execution plan
 
-Output: Provide SquadHandoff with:
-- from_squad: strategy
-- to_squad: engineering
-- contract_type: GherkinSpec
-- contract_data: Serialized GherkinSpec with feature_name, scenarios, data_requirements
+Output: Provide RequirementContext with:
+- ticket_id, title, description
+- acceptance_criteria (list)
+- affected_page_objects (list)
+- execution_plan
+- priority, estimated_complexity
+
+Focus on: Producing high-quality RequirementContext with clear acceptance criteria.""",
+        ),
+        Step(
+            name="Gherkin Generation",
+            agent=scribe,
+            description="""As the Scribe, convert RequirementContext to Gherkin specification.
+
+Input: RequirementContext from previous step
+
+Your task:
+1. Convert acceptance criteria to Gherkin scenarios
+2. Create Given/When/Then steps with proper structure
+3. Identify data requirements for test scenarios
+4. Generate GherkinSpec with reusable steps
+
+Output: Provide GherkinSpec with:
+- feature_name, feature_description
+- scenarios (list with Given/When/Then steps)
+- data_requirements (list)
+- traceability (ticket_id, requirement_context_id)
+- file_path (target .feature file path)
 
 Focus on: Producing high-quality Gherkin spec with clear scenarios and proper data requirements.""",
         ),
         Step(
+            name="Quality Gate - Spec",
+            agent=judge,
+            description="""As the Judge, validate GherkinSpec against DoD checklist.
+
+Input: GherkinSpec from previous step
+
+Your task:
+1. Review GherkinSpec for syntax errors
+2. Check step reusability
+3. Verify data requirements are complete
+4. Validate traceability to source ticket
+5. Provide JudgeVerdict with confidence score
+
+Output: Provide JudgeVerdict with:
+- confidence (0-100, auto-approve at ≥90)
+- passed (boolean)
+- checklist_results (list)
+- feedback (if rejected)
+
+Focus on: Ensuring spec quality before proceeding to automation generation.""",
+        ),
+        Step(
             name="Context Discovery",
-            agent=context_team,
-            description="""As the Context Team (Discovery + Librarian), build AUT knowledge base.
+            agent=discovery,
+            description="""As the Discovery Agent, crawl AUT and generate Site Manifesto.
 
 Input: AUT URL from workflow input or from GherkinSpec metadata
 
 Your task:
-1. Discovery: Crawl AUT to extract UI elements, generate SiteManifesto
-2. Librarian: Index SiteManifesto and codebase into knowledge base with hybrid search
-3. Verify: Confirm knowledge base is searchable and contains relevant information
+1. Crawl AUT to extract UI elements and page structure
+2. Identify interactive components (buttons, forms, fields)
+3. Determine optimal locator strategies (data-testid, role, text)
+4. Generate SiteManifesto with comprehensive coverage
 
-Output: Provide SquadHandoff with:
-- from_squad: context
-- to_squad: engineering
-- contract_type: SiteManifesto
-- contract_data: Serialized SiteManifesto with pages and components
+Output: Provide SiteManifesto with:
+- aut_base_url, aut_name
+- pages (list with components, locators)
+- total_pages, total_components
+- high_risk_actions (list)
 
-Focus on: Comprehensive AUT coverage and searchable knowledge base for semantic queries.""",
+Focus on: Comprehensive AUT coverage for Look-Before-You-Leap verification.""",
         ),
         Step(
-            name="Automation Generation",
-            agent=engineering_team,
-            description="""As the Engineering Team (Engineer + Data Agent), generate automation code.
+            name="Index Knowledge Base",
+            agent=librarian,
+            description="""As the Librarian, index SiteManifesto and codebase into knowledge base.
 
-Input: SquadHandoff from Strategy Team (GherkinSpec) and Context Team (SiteManifesto)
+Input: SiteManifesto from previous step
 
 Your task:
-1. Data Agent: Generate RunContext with test data and PII masking
-2. Engineer: Generate Page Objects using Look-Before-You-Leap with SiteManifesto
-3. Engineer: Generate step definitions with data injection from RunContext
-4. Judge: Validate generated code (eslint, type-check, no hardcoded sleeps)
+1. Index SiteManifesto with hybrid search (vector + keyword)
+2. Index codebase Page Objects and Step Definitions
+3. Verify knowledge base is searchable
+4. Add metadata for traceability
 
-Output: Provide SquadHandoff with:
-- from_squad: engineering
-- to_squad: operations
-- contract_type: RunContext + AutomationCode
-- contract_data: Serialized RunContext and generated code paths
+Output: Confirm knowledge base updated with:
+- Document count added
+- Index status
+- Searchability verification
 
-Focus on: High-quality automation following BDD+POM best practices with proper locators.""",
+Focus on: Building searchable knowledge base for semantic queries.""",
+        ),
+        Step(
+            name="Test Data Provisioning",
+            agent=data_agent,
+            description="""As the Data Agent, generate test data with PII masking.
+
+Input: GherkinSpec data requirements from previous step
+
+Your task:
+1. Analyze data requirements from GherkinSpec
+2. Generate realistic test data for all fields
+3. Apply PII masking to sensitive fields (email, phone, address, NINO)
+4. Create RunContext with test data configuration
+
+Output: Provide RunContext with:
+- test_user (credentials with PII masked)
+- db_seed_queries (SQL for test data setup)
+- api_mocks (endpoint mocks if needed)
+- cleanup_queries (SQL for cleanup)
+- environment, base_url, browser_config
+
+Focus on: Generating valid, realistic test data while protecting PII.""",
+        ),
+        Step(
+            name="Page Object Generation",
+            agent=engineer,
+            description="""As the Engineer, generate Page Object Model classes.
+
+Input: GherkinSpec, SiteManifesto, and RunContext from previous steps
+
+Your task:
+1. Use Look-Before-You-Leap pattern with SiteManifesto to verify elements
+2. Create Page Object classes for each page
+3. Define locators using data-testid, role, or text strategies
+4. Implement common methods (navigate, click, fill, getText, waitForVisible)
+
+Output: Generate Page Object files (e.g., pages/LoginPage.ts):
+- Page class with element locators
+- Action methods for each interaction
+- Proper TypeScript typing
+- No hardcoded locators or sleeps
+
+Focus on: Creating reusable, maintainable Page Objects following BDD+POM best practices.""",
+        ),
+        Step(
+            name="Step Definition Generation",
+            agent=engineer,
+            description="""As the Engineer, generate step definitions for test scenarios.
+
+Input: GherkinSpec, RunContext, and Page Objects from previous steps
+
+Your task:
+1. Map Gherkin steps to Page Object methods
+2. Generate step definition implementations
+3. Use test data from RunContext (no hardcoded values)
+4. Implement proper error handling
+
+Output: Generate step definition files (e.g., step_definitions/login.steps.ts):
+- Step implementations for each Given/When/Then
+- Integration with Page Objects
+- Test data injection from RunContext
+- Proper TypeScript typing
+
+Focus on: Creating reusable, data-driven step definitions with no hardcoded test data.""",
+        ),
+        Step(
+            name="Code Quality Gate",
+            agent=judge,
+            description="""As the Judge, validate generated code quality.
+
+Input: Generated Page Objects and step definitions from previous steps
+
+Your task:
+1. Run eslint on all generated files
+2. Run TypeScript type-check
+3. Verify no hardcoded sleeps or waitForTimeout
+4. Check locator strategies (data-testid, role, text)
+5. Validate no hardcoded test data
+
+Output: Provide quality gate verdict with:
+- eslint pass/fail status
+- type-check pass/fail status
+- List of any violations (sleeps, hardcoded data, bad locators)
+- Overall pass/fail recommendation
+
+Focus on: Ensuring code meets quality standards before execution.""",
         ),
         Step(
             name="Test Execution",
-            agent=engineering_team,
-            description="""As the Engineering Team, execute tests and collect results.
+            agent=engineer,
+            description="""As the Engineer, execute tests and collect results.
 
-Input: Generated automation code from previous step
+Input: Generated code that passed quality gates
 
 Your task:
-1. Engineer: Start Playwright in Docker container
-2. Engineer: Execute all test scenarios
-3. Engineer: Collect pass/fail results and capture traces for failures
-4. Engineer: Generate ExecutionResult with detailed results
+1. Start Playwright in Docker container
+2. Execute all test scenarios
+3. Collect pass/fail results and capture traces for failures
+4. Generate ExecutionResult with detailed results
 
 Output: Provide ExecutionResult with:
 - run_id, timestamp
@@ -105,52 +243,135 @@ Focus on: Comprehensive test execution with detailed failure information for tri
         ),
         Step(
             name="Failure Analysis",
-            agent=operations_team,
-            description="""As the Operations Team (Detective + Medic), analyze failures and heal if possible.
+            agent=detective,
+            description="""As the Detective, analyze test failures and determine root cause.
 
 Input: ExecutionResult with failures (if has_failures = True)
 
 Your task:
-1. Detective: Parse trace.zip, analyze error messages, determine root cause
-2. Detective: Generate RCAReport with classification (LOCATOR_STALE, LOGIC_ERROR, etc.)
-3. Detective: Assess healability (LOCATOR_STALE with confidence ≥80%)
-4. Medic: If healable, generate HealingPatch with surgical edit
-5. Healing Judge: Validate patch is surgical (confidence ≥90%, selector-only)
-6. Medic: Apply patch and verify 3x runs
+1. Parse trace.zip files for failed tests
+2. Analyze error messages and stack traces
+3. Determine root cause (LOCATOR_STALE, LOGIC_ERROR, DATA_MISMATCH, ENV_FAILURE)
+4. Generate RCAReport with classification and confidence
 
-Output: Provide SquadHandoff with:
-- from_squad: operations
-- to_squad: strategy
-- contract_type: RCAReport + HealingPatch (if applicable)
-- contract_data: Serialized RCAReport and HealingPatch
+Output: Provide RCAReport with:
+- test_name, failure_type, confidence
+- root_cause description
+- affected_locator (if LOCATOR_STALE)
+- is_healable (boolean)
+- recommendations
 
-Focus on: Accurate RCA and surgical healing only for LOCATOR_STALE failures.""",
+Focus on: Accurate root cause analysis with proper classification.""",
         ),
         Step(
-            name="Quality Gate",
-            agent=strategy_team,
-            description="""As the Strategy Team with Judge, perform final quality gate review.
+            name="Healing Patch Generation",
+            agent=medic,
+            description="""As the Medic, generate surgical healing patch if healable.
 
-Input: All previous hand-offs and results
+Input: RCAReport with is_healable = True
 
 Your task:
-1. Judge: Review entire workflow execution
-2. Judge: Validate all contracts were properly passed
-3. Judge: Check final test execution results
-4. Judge: Provide JudgeVerdict with overall confidence and approval
+1. If is_healable, generate HealingPatch with surgical edit
+2. Calculate unified diff between old and new locator
+3. Include justification from RCA
+4. If not healable, escalate to human with RCA details
+
+Output: Provide HealingPatch (if healable) with:
+- old_locator, new_locator
+- file_path, page_name, line_number
+- diff, justification
+- verification_passes (0 initially)
+
+Focus on: Surgical selector-only changes, no logic modifications.""",
+        ),
+        Step(
+            name="Healing Patch Validation",
+            agent=healing_judge,
+            description="""As the Healing Judge, validate patch is surgical and safe.
+
+Input: HealingPatch from previous step
+
+Your task:
+1. Verify patch is selector-only (no logic changes)
+2. Check confidence ≥90%
+3. Validate proper locator strategy (data-testid, role, text)
+4. Ensure no hardcoded test data
+5. Approve or reject patch
+
+Output: Provide validation verdict with:
+- is_valid (boolean)
+- confidence_score
+- issues (list if invalid)
+- approval (boolean)
+
+Focus on: Ensuring patch is truly surgical and safe to apply.""",
+        ),
+        Step(
+            name="Apply and Verify Healing",
+            agent=medic,
+            description="""As the Medic, apply patch and verify 3x runs.
+
+Input: Approved HealingPatch from previous step
+
+Your task:
+1. Apply the surgical edit to the file
+2. Verify the change was applied correctly
+3. Re-run the failed test 3 times
+4. Collect pass/fail results for each run
+
+Output: Provide verification results with:
+- verification_results (list of 3 pass/fail)
+- verification_passes (count)
+- success (boolean)
+- rollback_status (if failed)
+
+Focus on: Stable fix that passes 3 consecutive runs.""",
+        ),
+        Step(
+            name="Update Knowledge Base",
+            agent=librarian,
+            description="""As the Librarian, store healing learnings in knowledge base.
+
+Input: RCAReport, HealingPatch, and verification results
+
+Your task:
+1. Store healing learnings in knowledge base
+2. Index RCA patterns for future reference
+3. Update site manifesto if locator patterns changed
+4. Add metadata for traceability
+
+Output: Confirm knowledge base updated with:
+- Document count added
+- Index status
+- Traceability links
+
+Focus on: Building knowledge for future healing and impact analysis.""",
+        ),
+        Step(
+            name="Final Quality Gate",
+            agent=judge,
+            description="""As the Judge, perform final quality gate review.
+
+Input: All previous outputs and results
+
+Your task:
+1. Review entire workflow execution
+2. Validate all phases completed successfully
+3. Check final test execution results
+4. Provide JudgeVerdict with overall confidence and approval
 
 Output: Provide JudgeVerdict with:
 - confidence (0-100, auto-approve at ≥90)
 - passed (boolean)
-- checklist_results (list of ChecklistResult)
-- feedback (detailed feedback if rejected)
+- checklist_results (list)
+- feedback (if rejected)
 
 Focus on: Ensuring end-to-end quality before marking workflow complete.""",
         ),
         Step(
             name="Report Generation",
-            agent=strategy_team,
-            description="""As the Strategy Team, generate final execution report.
+            agent=scribe,
+            description="""As the Scribe, generate final execution report.
 
 Input: All contracts and results from workflow execution
 

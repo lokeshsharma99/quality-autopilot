@@ -269,15 +269,25 @@ Quality Autopilot provides 6 end-to-end workflows for common STLC scenarios.
 - **When to Use:** Full regression with self-healing
 
 ### Full Lifecycle Workflow
-- **Purpose:** End-to-end workflow from requirement to execution/report using teams
+- **Purpose:** End-to-end workflow from requirement to execution/report using individual agents
 - **Steps:**
-  1. Requirement Analysis (Strategy Team) - RequirementContext → GherkinSpec
-  2. Context Discovery (Context Team) - SiteManifesto
-  3. Automation Generation (Engineering Team) - RunContext + AutomationCode
-  4. Test Execution (Engineering Team) - ExecutionResult
-  5. Failure Analysis (Operations Team) - RCAReport + HealingPatch
-  6. Quality Gate (Strategy Team + Judge) - JudgeVerdict
-  7. Report Generation (Strategy Team) - FinalReport
+  1. Requirement Analysis (Architect) - RequirementContext
+  2. Gherkin Generation (Scribe) - GherkinSpec
+  3. Quality Gate - Spec (Judge) - JudgeVerdict
+  4. Context Discovery (Discovery) - SiteManifesto
+  5. Index Knowledge Base (Librarian) - Indexed KB
+  6. Test Data Provisioning (Data Agent) - RunContext
+  7. Page Object Generation (Engineer) - Page Objects
+  8. Step Definition Generation (Engineer) - Step Definitions
+  9. Code Quality Gate (Judge) - Quality verdict
+  10. Test Execution (Engineer) - ExecutionResult
+  11. Failure Analysis (Detective) - RCAReport
+  12. Healing Patch Generation (Medic) - HealingPatch
+  13. Healing Patch Validation (Healing Judge) - Validation
+  14. Apply and Verify Healing (Medic) - Verified fix
+  15. Update Knowledge Base (Librarian) - Learnings
+  16. Final Quality Gate (Judge) - JudgeVerdict
+  17. Report Generation (Scribe) - FinalReport
 - **Input:** Jira ticket ID or requirement description
 - **Output:** Final report with all phases summarized
 - **When to Use:** Complete STLC orchestration from requirement to report
