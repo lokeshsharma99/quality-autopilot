@@ -29,31 +29,26 @@ from db.session import get_automation_scaffold_knowledge
 # ---------------------------------------------------------------------------
 # Knowledge Base
 # ---------------------------------------------------------------------------
-# Temporarily disabled to isolate delegation issue
-# try:
-#     automation_knowledge = get_automation_scaffold_knowledge()
-# except Exception:
-#     automation_knowledge = None
-automation_knowledge = None
+try:
+    automation_knowledge = get_automation_scaffold_knowledge()
+except Exception:
+    automation_knowledge = None
 
 # ---------------------------------------------------------------------------
 # Playwright MCP Tools
 # ---------------------------------------------------------------------------
-# Temporarily disabled to isolate delegation issue
-# try:
-#     playwright_mcp = MCPTools(
-#         transport="streamable-http",
-#         url="http://qap-playwright-mcp:8931/mcp",
-#         exclude_tools=["browser_take_screenshot"],
-#     )
-# except Exception:
-#     playwright_mcp = None
-playwright_mcp = None
+try:
+    playwright_mcp = MCPTools(
+        transport="streamable-http",
+        url="http://qap-playwright-mcp:8931/mcp",
+        exclude_tools=["browser_take_screenshot"],
+    )
+except Exception:
+    playwright_mcp = None
 
 # ---------------------------------------------------------------------------
 # Create Agent
 # ---------------------------------------------------------------------------
-# Minimal configuration with only essential tools to isolate delegation issue
 engineer_tools = [
     CodingTools(),
     FileTools(Path("automation")),
@@ -65,6 +60,14 @@ engineer_tools = [
     create_github_pr,
 ]
 
+# Add KnowledgeTools if knowledge base is available
+if automation_knowledge:
+    engineer_tools.append(KnowledgeTools(knowledge=automation_knowledge))
+
+# Add Playwright MCP tools if available
+if playwright_mcp:
+    engineer_tools.append(playwright_mcp)
+
 engineer = Agent(
     id="engineer",
     name="Engineer",
@@ -72,7 +75,7 @@ engineer = Agent(
     model=MODEL,
     db=None,
     knowledge=automation_knowledge,
-    search_knowledge=False,
+    search_knowledge=automation_knowledge is not None,
     tools=engineer_tools,
     instructions=INSTRUCTIONS,
     enable_agentic_memory=True,

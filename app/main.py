@@ -18,10 +18,12 @@ from agno.os import AgentOS
 
 from agents.architect import architect
 from agents.data_agent import data_agent
+from agents.detective import detective
 from agents.discovery import discovery
 from agents.engineer import engineer
 from agents.judge import judge
 from agents.librarian import librarian
+from agents.medic import medic
 from agents.scribe import scribe
 from app.registry import registry
 from app.settings import OLLAMA_MODELS, OLLAMA_MODEL_ID, RUNTIME_ENV, agent_db
@@ -72,10 +74,12 @@ agent_os = AgentOS(
     agents=[
         architect,
         data_agent,
+        detective,
         discovery,
         engineer,
         judge,
         librarian,
+        medic,
         scribe,
     ],
     teams=[
@@ -193,5 +197,5 @@ def health_check():
 if __name__ == "__main__":
     agent_os.serve(
         app="app.main:app",
-        reload=RUNTIME_ENV == "dev",
+        reload=False,  # Disabled reload to fix subprocess spawn error
     )
