@@ -11,10 +11,12 @@ from pathlib import Path
 from agno.agent import Agent
 from agno.guardrails import OpenAIModerationGuardrail, PIIDetectionGuardrail, PromptInjectionGuardrail
 from agno.tools.file import FileTools
+from agno.tools.knowledge import KnowledgeTools
 from agno.tools.reasoning import ReasoningTools
 
 from agents.scribe.instructions import INSTRUCTIONS
 from app.settings import MODEL, agent_db
+from db.session import get_automation_knowledge
 
 # ---------------------------------------------------------------------------
 # Create Agent
@@ -30,6 +32,8 @@ scribe = Agent(
 
     # Data
     db=agent_db,
+    knowledge=get_automation_knowledge(),
+    search_knowledge=True,
 
     # Capabilities
     tools=[
@@ -40,6 +44,7 @@ scribe = Agent(
             add_few_shot=True,
         ),
         FileTools(Path("automation")),
+        KnowledgeTools(knowledge=get_automation_knowledge()),
     ],
 
     # Instructions

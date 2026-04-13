@@ -12,6 +12,7 @@ import logging
 from agno.agent import Agent
 from agno.guardrails import PIIDetectionGuardrail, PromptInjectionGuardrail
 from agno.tools.file import FileTools
+from agno.tools.knowledge import KnowledgeTools
 from agno.tools.reasoning import ReasoningTools
 
 from agents.technical_tester.instructions import INSTRUCTIONS
@@ -25,20 +26,20 @@ from agents.technical_tester.tools import (
     run_tests,
 )
 from app.settings import MODEL, agent_db
-from db.session import get_codebase_knowledge
+from db.session import get_automation_knowledge
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Create Knowledge Base
 # ---------------------------------------------------------------------------
-# Share codebase knowledge base with Engineer agent
-codebase_knowledge = get_codebase_knowledge()
+# Share automation knowledge base with other agents
+automation_knowledge = get_automation_knowledge()
 
-if codebase_knowledge is not None:
-    logger.info("Technical Tester: Codebase knowledge base loaded")
+if automation_knowledge is not None:
+    logger.info("Technical Tester: Automation knowledge base loaded")
 else:
-    logger.warning("Technical Tester: Codebase knowledge base is None - codebase context unavailable")
+    logger.warning("Technical Tester: Automation knowledge base is None - codebase context unavailable")
 
 # ---------------------------------------------------------------------------
 # Build Tools List
@@ -51,6 +52,7 @@ tools = [
         add_few_shot=True,
     ),
     FileTools(Path("automation")),
+    KnowledgeTools(knowledge=automation_knowledge) if automation_knowledge else None,
     init_playwright_agents,
     create_seed_test,
     run_planner,
@@ -74,8 +76,8 @@ technical_tester = Agent(
 
     # Data
     db=agent_db,
-    knowledge=codebase_knowledge if codebase_knowledge else None,
-    search_knowledge=codebase_knowledge is not None,
+    knowledge=automation_knowledge if automation_knowledge else None,
+    search_knowledge=automation_knowledge is not None,
 
     # Capabilities
     tools=tools,

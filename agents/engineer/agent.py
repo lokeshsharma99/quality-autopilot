@@ -26,13 +26,13 @@ from agents.engineer.tools import (
     validate_files_created,
 )
 from app.settings import MODEL, agent_db
-from db.session import get_automation_scaffold_knowledge
+from db.session import get_automation_knowledge
 
 # ---------------------------------------------------------------------------
 # Knowledge Base
 # ---------------------------------------------------------------------------
 try:
-    automation_knowledge = get_automation_scaffold_knowledge()
+    automation_knowledge = get_automation_knowledge()
 except Exception:
     automation_knowledge = None
 

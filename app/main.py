@@ -313,8 +313,7 @@ def list_knowledge_bases():
     return {
         "knowledge_bases": [
             {"id": "site_manifesto_knowledge", "name": "Site Manifesto", "description": "UI crawling results and site structure"},
-            {"id": "codebase_knowledge", "name": "Codebase", "description": "Source code and architecture documentation"},
-            {"id": "automation_knowledge", "name": "Automation", "description": "BDD scenarios and test artifacts"},
+            {"id": "automation_knowledge", "name": "Automation", "description": "Comprehensive automation codebase: framework templates, Page Objects, Step Definitions, helpers, fixtures, configurations, and Gherkin features"},
             {"id": "learnings_knowledge", "name": "Learnings", "description": "Agent learnings and patterns"},
             {"id": "rca_knowledge", "name": "RCA", "description": "CI pipeline failure analysis and root cause patterns"}
         ]

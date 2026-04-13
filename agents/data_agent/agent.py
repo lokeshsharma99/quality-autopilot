@@ -12,6 +12,7 @@ from pathlib import Path
 from agno.agent import Agent
 from agno.tools.coding import CodingTools
 from agno.tools.file import FileTools
+from agno.tools.knowledge import KnowledgeTools
 from agno.tools.reasoning import ReasoningTools
 
 from agents.data_agent.instructions import INSTRUCTIONS
@@ -22,6 +23,7 @@ from agents.data_agent.tools import (
     get_test_data_on_demand,
 )
 from app.settings import MODEL, agent_db
+from db.session import get_automation_knowledge
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,8 @@ data_agent = Agent(
     role="Provision test data with PII masking for automation tests",
     model=MODEL,
     db=agent_db,
+    knowledge=get_automation_knowledge(),
+    search_knowledge=True,
     tools=[
         CodingTools(),
         FileTools(Path("automation")),
@@ -43,6 +47,7 @@ data_agent = Agent(
             add_instructions=True,
             add_few_shot=True,
         ),
+        KnowledgeTools(knowledge=get_automation_knowledge()),
         generate_dynamic_test_user,
         get_test_data_on_demand,
         generate_run_context,

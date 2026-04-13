@@ -17,7 +17,7 @@ from agno.tools.reasoning import ReasoningTools
 from agents.architect.instructions import INSTRUCTIONS
 from agents.architect.tools import add_jira_comment, fetch_jira_ticket
 from app.settings import MODEL, agent_db
-from db.session import get_site_manifesto_knowledge, get_codebase_knowledge
+from db.session import get_site_manifesto_knowledge, get_automation_knowledge
 
 logger = logging.getLogger(__name__)
 
@@ -25,18 +25,18 @@ logger = logging.getLogger(__name__)
 # Knowledge Bases
 # ---------------------------------------------------------------------------
 site_manifesto_knowledge = get_site_manifesto_knowledge()
-codebase_knowledge = get_codebase_knowledge()
+automation_knowledge = get_automation_knowledge()
 
 # Log knowledge base availability
 if site_manifesto_knowledge is not None:
     logger.info("Architect: Site Manifesto knowledge base loaded")
 else:
-    logger.warning("Architect: Site Manifesto knowledge base is None - semantic search unavailable")
+    logger.warning("Architect: Site Manifesto knowledge base is None - context unavailable")
 
-if codebase_knowledge is not None:
-    logger.info("Architect: Codebase knowledge base loaded")
+if automation_knowledge is not None:
+    logger.info("Architect: Automation knowledge base loaded")
 else:
-    logger.warning("Architect: Codebase knowledge base is None - semantic search unavailable")
+    logger.warning("Architect: Automation knowledge base is None - context unavailable")
 
 # ---------------------------------------------------------------------------
 # Build Tools List
@@ -54,10 +54,10 @@ if site_manifesto_knowledge is not None:
 else:
     logger.warning("Architect: Skipping Site Manifesto KnowledgeTools due to None knowledge base")
 
-if codebase_knowledge is not None:
-    tools.append(KnowledgeTools(knowledge=codebase_knowledge))
+if automation_knowledge is not None:
+    tools.append(KnowledgeTools(knowledge=automation_knowledge))
 else:
-    logger.warning("Architect: Skipping Codebase KnowledgeTools due to None knowledge base")
+    logger.warning("Architect: Skipping Automation KnowledgeTools due to None knowledge base")
 
 # Jira API Tool (if configured)
 if os.getenv("JIRA_URL") and os.getenv("JIRA_API_TOKEN"):

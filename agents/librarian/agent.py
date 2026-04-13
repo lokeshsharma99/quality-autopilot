@@ -11,8 +11,13 @@ from agno.tools.knowledge import KnowledgeTools
 from agno.tools.reasoning import ReasoningTools
 
 from agents.librarian.instructions import INSTRUCTIONS
+from agents.librarian.tools import (
+    check_and_re_index_changes,
+    get_file_statistics,
+    index_automation_codebase,
+)
 from app.settings import MODEL, agent_db
-from db.session import get_codebase_knowledge
+from db.session import get_automation_knowledge
 
 # ---------------------------------------------------------------------------
 # Create Librarian Agent
@@ -23,7 +28,7 @@ librarian = Agent(
     role="Manages vector knowledge base for test codebase",
     model=MODEL,
     db=agent_db,
-    knowledge=get_codebase_knowledge(),
+    knowledge=get_automation_knowledge(),
     search_knowledge=True,
     tools=[
         ReasoningTools(
@@ -32,7 +37,10 @@ librarian = Agent(
             add_instructions=True,
             add_few_shot=True,
         ),
-        KnowledgeTools(knowledge=get_codebase_knowledge()),
+        KnowledgeTools(knowledge=get_automation_knowledge()),
+        index_automation_codebase,
+        check_and_re_index_changes,
+        get_file_statistics,
     ],
     instructions=INSTRUCTIONS,
     enable_agentic_memory=True,

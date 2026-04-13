@@ -27,6 +27,9 @@ python-dotenv
 # Data Agent — Dynamic Data Generation
 faker
 
+# Librarian Agent — File Watching
+watchdog
+
 # Knowledge Base Chunkers
 chonkie[semantic]
 unstructured
