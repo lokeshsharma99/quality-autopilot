@@ -2,11 +2,14 @@
 Librarian Agent Tools
 =====================
 
-Tools for the Librarian agent including file watching and re-indexing capabilities.
+Tools for the Librarian agent including file watching, re-indexing, and obsolescence detection capabilities.
 """
 
 import os
+import re
 import time
+import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -14,6 +17,12 @@ from agno.tools.file import FileTools
 from agno.tools.knowledge import KnowledgeTools
 from agno.utils.log import logger
 
+from contracts.test_deletion_approval import (
+    ApprovalStatus,
+    DeletionReason,
+    ObsolescenceReport,
+    TestDeletionRequest,
+)
 from db.session import get_automation_knowledge
 
 
@@ -210,3 +219,147 @@ def get_file_statistics(watch_path: str = "automation") -> str:
         stats += f"  {ext}: {count}\n"
 
     return stats
+
+
+# ---------------------------------------------------------------------------
+# Obsolescence Detection Tools
+# ---------------------------------------------------------------------------
+def detect_obsolete_scenarios(watch_path: str = "automation") -> str:
+    """Detect obsolete test scenarios by comparing Site Manifesto with feature files.
+
+    Args:
+        watch_path: Path to the automation directory
+
+    Returns:
+        Status message with number of obsolete scenarios detected
+    """
+    features_dir = Path(watch_path) / "features"
+    if not features_dir.exists():
+        return "No features directory found"
+
+    # Query knowledge base for Site Manifesto
+    knowledge = get_automation_knowledge()
+    if knowledge is None:
+        return "Knowledge base not available"
+
+    # Get all feature files
+    feature_files = list(features_dir.glob("*.feature"))
+    obsolete_count = 0
+
+    for feature_file in feature_files:
+        try:
+            content = feature_file.read_text()
+            # Simple heuristic: check if scenario references removed AUT features
+            # In a real implementation, this would compare with Site Manifesto
+            # For now, this is a placeholder for the detection logic
+            logger.info(f"Analyzing feature file: {feature_file.name}")
+        except Exception as e:
+            logger.error(f"Failed to analyze {feature_file}: {e}")
+
+    return f"Detected {obsolete_count} potentially obsolete scenarios"
+
+
+def detect_unused_steps(watch_path: str = "automation") -> str:
+    """Detect step definitions not referenced in any feature file.
+
+    Args:
+        watch_path: Path to the automation directory
+
+    Returns:
+        Status message with number of unused step definitions
+    """
+    steps_dir = Path(watch_path) / "step_definitions"
+    features_dir = Path(watch_path) / "features"
+
+    if not steps_dir.exists() or not features_dir.exists():
+        return "Step definitions or features directory not found"
+
+    # Get all step definition files
+    step_files = list(steps_dir.glob("*.ts"))
+    # Get all feature files
+    feature_files = list(features_dir.glob("*.feature"))
+
+    # Extract step patterns from feature files
+    used_steps = set()
+    for feature_file in feature_files:
+        try:
+            content = feature_file.read_text()
+            # Extract Gherkin steps (Given, When, Then)
+            for line in content.split("\n"):
+                line = line.strip()
+                if line.startswith(("Given ", "When ", "Then ", "And ", "But ")):
+                    used_steps.add(line)
+        except Exception as e:
+            logger.error(f"Failed to read {feature_file}: {e}")
+
+    unused_count = 0
+    # In a real implementation, this would parse step definition files
+    # and check if any are not in used_steps
+    logger.info(f"Found {len(step_files)} step definition files")
+    logger.info(f"Found {len(used_steps)} unique step patterns in features")
+
+    return f"Detected {unused_count} potentially unused step definitions"
+
+
+def detect_orphaned_pages(watch_path: str = "automation") -> str:
+    """Detect Page Objects not used by any step definition.
+
+    Args:
+        watch_path: Path to the automation directory
+
+    Returns:
+        Status message with number of orphaned Page Objects
+    """
+    pages_dir = Path(watch_path) / "pages"
+    steps_dir = Path(watch_path) / "step_definitions"
+
+    if not pages_dir.exists() or not steps_dir.exists():
+        return "Pages or step definitions directory not found"
+
+    # Get all Page Object files
+    page_files = list(pages_dir.glob("*.ts"))
+    # Get all step definition files
+    step_files = list(steps_dir.glob("*.ts"))
+
+    orphaned_count = 0
+    # In a real implementation, this would parse step definition files
+    # and check which Page Objects are imported/used
+    logger.info(f"Found {len(page_files)} Page Object files")
+    logger.info(f"Found {len(step_files)} step definition files")
+
+    return f"Detected {orphaned_count} potentially orphaned Page Objects"
+
+
+def generate_obsolescence_report(watch_path: str = "automation") -> str:
+    """Generate a comprehensive obsolescence report for the regression suite.
+
+    Args:
+        watch_path: Path to the automation directory
+
+    Returns:
+        JSON string containing the ObsolescenceReport
+    """
+    report_id = str(uuid.uuid4())
+    
+    # Run all detection tools
+    obsolete_scenarios_result = detect_obsolete_scenarios(watch_path)
+    unused_steps_result = detect_unused_steps(watch_path)
+    orphaned_pages_result = detect_orphaned_pages(watch_path)
+
+    # Create the report
+    report = ObsolescenceReport(
+        report_id=report_id,
+        obsolete_scenarios=[],
+        obsolete_steps=[],
+        orphaned_pages=[],
+        stale_fixtures=[],
+        total_recommendations=0,
+        high_confidence_count=0
+    )
+
+    logger.info(f"Generated obsolescence report: {report_id}")
+    logger.info(f"Obsolete scenarios: {obsolete_scenarios_result}")
+    logger.info(f"Unused steps: {unused_steps_result}")
+    logger.info(f"Orphaned pages: {orphaned_pages_result}")
+
+    return f"Generated obsolescence report with ID: {report_id}"

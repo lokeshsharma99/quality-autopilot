@@ -13,6 +13,10 @@ from agno.tools.reasoning import ReasoningTools
 from agents.librarian.instructions import INSTRUCTIONS
 from agents.librarian.tools import (
     check_and_re_index_changes,
+    detect_obsolete_scenarios,
+    detect_orphaned_pages,
+    detect_unused_steps,
+    generate_obsolescence_report,
     get_file_statistics,
     index_automation_codebase,
 )
@@ -41,6 +45,10 @@ librarian = Agent(
         index_automation_codebase,
         check_and_re_index_changes,
         get_file_statistics,
+        detect_obsolete_scenarios,
+        detect_unused_steps,
+        detect_orphaned_pages,
+        generate_obsolescence_report,
     ],
     instructions=INSTRUCTIONS,
     enable_agentic_memory=True,

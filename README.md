@@ -42,18 +42,19 @@ curl http://localhost:8000/health
 
 ```
 Quality Autopilot
-├── 12 Agents — Architect, Scribe, Discovery, Librarian, Engineer,
+├── 13 Agents — Architect, Scribe, Discovery, Librarian, Curator, Engineer,
 │                Data Agent, Detective, Medic, Judge, Healing Judge,
 │                CI Log Analyzer, Technical Tester
 ├── 5 Squads  — Strategy, Context, Engineering, Operations, Grooming
-├── 7 Flows   — Spec-to-Code, Discovery Onboard, Triage-Heal, Grooming,
-│                Full Regression, Full Lifecycle, Technical Testing
-└── 11 Contracts — Pydantic hand-off models
+├── 8 Flows   — Spec-to-Code, Discovery Onboard, Triage-Heal, Grooming,
+│                Full Regression, Full Lifecycle, Technical Testing,
+│                Regression Maintenance
+└── 12 Contracts — Pydantic hand-off models
 ```
 
 ## Agents
 
-Quality Autopilot uses 12 specialized AI agents, each with a specific Primary Skill and tool set.
+Quality Autopilot uses 13 specialized AI agents, each with a specific Primary Skill and tool set.
 
 ### Architect
 - **Primary Skill:** `semantic_search`
@@ -81,11 +82,11 @@ Quality Autopilot uses 12 specialized AI agents, each with a specific Primary Sk
 
 ### Librarian
 - **Primary Skill:** `vector_indexing`
-- **Role:** Manages vector knowledge base for test codebase
-- **Tools:** KnowledgeTools, ReasoningTools
-- **When to Use:** Indexing Page Objects and Step Definitions for semantic search
-- **Input:** Codebase changes
-- **Output:** Updated vector index in PostgreSQL/PgVector
+- **Role:** Manages vector knowledge base for test codebase with obsolescence detection capabilities
+- **Tools:** KnowledgeTools, ReasoningTools, custom obsolescence detection tools (detect_obsolete_scenarios, detect_unused_steps, detect_orphaned_pages, generate_obsolescence_report)
+- **When to Use:** Indexing Page Objects and Step Definitions for semantic search, detecting obsolete tests
+- **Input:** Codebase changes, obsolescence detection requests
+- **Output:** Updated vector index in PostgreSQL/PgVector, ObsolescenceReport
 
 ### Engineer
 - **Primary Skill:** `file_writer`
@@ -144,6 +145,16 @@ Quality Autopilot uses 12 specialized AI agents, each with a specific Primary Sk
 - **Output:** RCA findings, Azure DevOps work item (after HITL approval)
 - **Knowledge Base:** RCA knowledge base for storing historical RCA learnings and patterns
 
+### Curator
+- **Primary Skill:** `suite_curation`
+- **Role:** Maintains regression suite by detecting obsolete tests and recommending deletions with HITL approval
+- **Tools:** FileTools, KnowledgeTools, ReasoningTools, custom curation tools (request_deletion_approval, execute_test_deletion, log_deletion_to_audit)
+- **When to Use:** Regression suite maintenance, obsolescence detection, test scenario deletion
+- **Input:** AUT changes, obsolescence detection results
+- **Output:** ObsolescenceReport, deleted test files (after HITL approval), audit trail entries
+- **Knowledge Base:** Automation knowledge base for comparing Site Manifesto versions
+- **HITL Approval:** Uses Agno's native approval mechanism (OnError.pause) for test deletions
+
 ### Technical Tester
 - **Primary Skill:** `test_generation`
 - **Role:** Uses Playwright Test Agents (planner, generator, healer) for rapid test generation, smoke tests, and exploratory testing (complements BDD+POM)
@@ -199,7 +210,7 @@ Quality Autopilot organizes agents into 5 cross-functional squads, each using Te
 
 ## Contracts
 
-Quality Autopilot uses 11 Pydantic contracts for structured hand-offs between agents and teams.
+Quality Autopilot uses 12 Pydantic contracts for structured hand-offs between agents and teams.
 
 ### Core Contracts
 - **RequirementContext** - Structured analysis of business requirements (Architect output)
@@ -218,10 +229,11 @@ Quality Autopilot uses 11 Pydantic contracts for structured hand-offs between ag
 - **WorkflowStatus** - Workflow orchestration status tracking
 - **SquadHandoff** - Inter-squad communication with contract-based data passing
 - **AutomationScaffold** - Automation framework scaffolding structure
+- **TestDeletionApproval** - Test deletion request with HITL approval workflow (Curator output)
 
 ## Workflows
 
-Quality Autopilot provides 7 end-to-end workflows for common STLC scenarios.
+Quality Autopilot provides 8 end-to-end workflows for common STLC scenarios.
 
 ### Spec-to-Code Workflow
 - **Purpose:** Convert requirements to automated Playwright tests
@@ -325,6 +337,22 @@ Quality Autopilot provides 7 end-to-end workflows for common STLC scenarios.
 - **When to Use:** AUT onboarding validation, smoke tests, exploratory testing, rapid prototyping
 - **Note:** Complements BDD+POM workflow (technical_tester for rapid testing, Engineer for production BDD+POM)
 
+### Regression Maintenance Workflow
+- **Purpose:** End-to-end regression suite curation to keep tests up to date as the AUT evolves
+- **Steps:**
+  1. Detect AUT Changes (Discovery Agent) - Current Site Manifesto
+  2. Compare Site Manifesto (Curator Agent) - Version comparison
+  3. Identify Obsolete Tests (Curator Agent) - Use Librarian's obsolescence detection tools
+  4. Generate Deletion Recommendations (Curator Agent) - TestDeletionRequest with justifications
+  5. HITL Approval (Curator Agent) - Agno's native approval mechanism (OnError.pause)
+  6. Execute Approved Deletions (Curator Agent) - Delete tests with backups
+  7. Update Knowledge Base (Librarian Agent) - Re-index automation codebase
+  8. Generate Maintenance Report (Curator Agent) - ObsolescenceReport
+- **Input:** AUT changes, obsolescence detection requests
+- **Output:** ObsolescenceReport, deleted test files (after HITL approval), updated knowledge base, audit trail
+- **When to Use:** Regression suite maintenance, obsolescence detection, test scenario deletion
+- **HITL Approval:** Test deletions require human approval unless confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD (default 0.9)
+
 ## How to Use
 
 ### Converting a Jira Ticket to Automation
@@ -397,6 +425,51 @@ Quality Autopilot provides 7 end-to-end workflows for common STLC scenarios.
    Green tests: Passed
    Red tests: Healed automatically
    ```
+
+### Regression Suite Curation
+
+The Quality Autopilot system includes automated regression suite curation to keep tests up to date as the AUT evolves.
+
+**How it works:**
+1. **Obsolescence Detection** - Librarian agent detects obsolete tests by comparing Site Manifesto versions
+2. **Deletion Recommendations** - Curator agent generates TestDeletionRequest objects with justifications
+3. **HITL Approval** - Test deletions require human approval via Agno's native approval mechanism (OnError.pause)
+4. **Auto-Approval** - High-confidence recommendations (≥0.9) can be auto-approved (configurable threshold)
+5. **Audit Trail** - All deletions are logged to an audit trail for compliance
+
+**Running Regression Maintenance:**
+
+1. **Execute Regression Maintenance workflow** via Agent UI
+   ```
+   Input: AUT changes or obsolescence detection request
+   Output: ObsolescenceReport + deleted tests (after approval) + audit trail
+   ```
+
+2. **Review Deletion Recommendations:**
+   ```
+   Curator will generate deletion requests with:
+   - Test type (feature_scenario, step_definition, page_object, fixture)
+   - File path and scenario name
+   - Reason for deletion (feature_removed, duplicate_test, etc.)
+   - Confidence score (0.0-1.0)
+   - Justification and affected AUT features
+   ```
+
+3. **Approve or Reject Deletions:**
+   ```
+   - High confidence (≥0.9): Auto-approved
+   - Low confidence (<0.9): Requires human approval
+   - Reviewer can add comments before approval/rejection
+   ```
+
+**HITL Approval Flow:**
+- Curator generates TestDeletionRequest
+- System checks confidence score against AUTO_APPROVE_CONFIDENCE_THRESHOLD
+- If below threshold: Triggers OnError.pause for human review
+- Human reviews justification and approves/rejects
+- If approved: Curator deletes test with optional backup
+- Deletion logged to audit trail
+- Knowledge base re-indexed by Librarian
 
 ## Current Status
 

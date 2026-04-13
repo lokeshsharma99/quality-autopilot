@@ -18,6 +18,7 @@ from agno.os import AgentOS
 
 from agents.architect import architect
 from agents.ci_log_analyzer import ci_log_analyzer
+from agents.curator import curator
 from agents.data_agent import data_agent
 from agents.detective import detective
 from agents.discovery import discovery
@@ -40,6 +41,7 @@ from workflows.discovery_onboard import discovery_onboard
 from workflows.full_lifecycle import full_lifecycle
 from workflows.full_regression import full_regression
 from workflows.grooming import grooming
+from workflows.regression_maintenance import regression_maintenance
 from workflows.spec_to_code import spec_to_code
 from workflows.technical_testing import technical_testing
 from workflows.triage_heal import triage_heal
@@ -97,6 +99,7 @@ agent_os = AgentOS(
     agents=[
         architect,
         ci_log_analyzer,
+        curator,
         data_agent,
         detective,
         discovery,
@@ -121,6 +124,7 @@ agent_os = AgentOS(
         full_lifecycle,
         full_regression,
         grooming,
+        regression_maintenance,
         spec_to_code,
         technical_testing,
         triage_heal,

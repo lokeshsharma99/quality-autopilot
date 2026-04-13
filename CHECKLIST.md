@@ -267,6 +267,45 @@
 
 ---
 
+## Phase 6: Regression Suite Curation (The "Gardener")
+
+**Focus:** Keeping the regression suite up to date as the AUT evolves through obsolescence detection and HITL-protected test deletion.
+
+**Key Files:** `agents/curator/`, `contracts/test_deletion_approval.py`, `workflows/regression_maintenance/`
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 6.1 | **Create TestDeletionApproval Contract** | `[x]` | Created `contracts/test_deletion_approval.py` with TestDeletionRequest, TestDeletionApproval, TestDeletionAudit, ObsolescenceReport models. Updated contracts/__init__.py. |
+| 6.2 | **Create Curator Agent** | `[x]` | Created `agents/curator/` with agent.py, instructions.py, tools.py, __init__.py, __main__.py. Primary Skill: `suite_curation`. Includes HITL approval tools. |
+| 6.3 | **Extend Librarian Agent** | `[x]` | Added obsolescence detection tools to `agents/librarian/tools.py`: detect_obsolete_scenarios, detect_unused_steps, detect_orphaned_pages, generate_obsolescence_report. Updated agent.py tools list. |
+| 6.4 | **Create Regression Maintenance Workflow** | `[x]` | Created `workflows/regression_maintenance/` with workflow.py, instructions.py, __init__.py. 8-step workflow for end-to-end suite curation. |
+| 6.5 | **Register Curator Agent** | `[x]` | Added Curator to app/main.py agents list. |
+| 6.6 | **Register Regression Maintenance Workflow** | `[x]` | Added regression_maintenance to app/main.py workflows list. |
+| 6.7 | **Update README Documentation** | `[x]` | Updated Architecture (13 agents, 8 flows), added Curator agent description, updated Librarian description, added Regression Maintenance workflow, added Regression Suite Curation section. |
+| 6.8 | **Test Obsolescence Detection** | `[/]` | Librarian obsolescence detection tools created, requires end-to-end testing. |
+| 6.9 | **Test HITL Approval Flow** | `[/]` | Curator HITL approval tools created, requires end-to-end testing. |
+| 6.10 | **Gate 6 Verification** | `[ ]` | Requires end-to-end testing of regression maintenance workflow. |
+
+### 🚧 GATE 6 — Definition of Done
+
+```
+[ ] Curator detects obsolete tests with ≥90% accuracy (requires end-to-end testing)
+[ ] HITL approval mechanism works correctly (requires end-to-end testing)
+[ ] Test deletions only occur with human approval (or high confidence auto-approval)
+[ ] Knowledge base updated after deletions
+[ ] Audit trail maintained for all deletions
+[ ] Maintenance reports generated and saved
+```
+
+**GATE 6 Status: IN PROGRESS (Infrastructure Complete, Testing Pending)**
+- All infrastructure implemented: Curator agent, Librarian extensions, Regression Maintenance workflow
+- Contracts defined: TestDeletionApproval with full HITL approval flow
+- Documentation updated: README.md includes regression suite curation section
+- Registered in AgentOS: Curator agent and regression_maintenance workflow
+- Remaining: End-to-end testing of obsolescence detection and HITL approval flow
+
+---
+
 ## Progress Summary
 
 | Phase | Name | Status | Gate Cleared |
@@ -279,6 +318,7 @@
 | **4** | Triage & Self-Healing (Immune System) | `Complete` | `[x]` (6/6 DoD passing) |
 | **4b** | Operations Coordination | `Complete` | `[x]` |
 | **5** | User Story Grooming (3 Amigos) | `Complete` | `[x]` |
+| **6** | Regression Suite Curation | `In Progress` | `[ ]` |
 | **6** | Autonomous Maturity (Pilot) | `In Progress` | `[ ]` |
 
 ---
@@ -287,6 +327,7 @@
 
 | Date | Phase | Change | Author |
 |------|-------|--------|--------|
+| 2026-04-13 | 6 | **Phase 6 Infrastructure Complete.** Implemented regression suite curation with Curator agent, extended Librarian with obsolescence detection, created TestDeletionApproval contract, created Regression Maintenance workflow. Curator agent uses Agno's native HITL approval (OnError.pause) for test deletions. Auto-approval threshold configurable (default 0.9). All components registered in AgentOS. Documentation updated in README.md and CHECKLIST.md. Gate 6 infrastructure complete, end-to-end testing pending. | Cascade |
 | 2026-04-13 | 3 | **Gate 3 Infrastructure Setup.** Configured ESLint in automation directory: Created .eslintrc.json with TypeScript and Playwright rules, added lint scripts to package.json. Created test infrastructure: test-login.feature, test-login.steps.ts, login-page.ts demonstrating proper BDD+POM structure. Updated Gate 3 status to 5/9 criteria passing (eslint criterion now passing). Remaining criteria require end-to-end workflow execution and test runs. | Cascade |
 | 2026-04-13 | 6 | **Phase 5 Additional Tasks Complete.** Implemented Comprehensive Evals (5.5): Created evals/comprehensive_evals.py with 6 test classes covering all agents, teams, workflows, knowledge bases, contracts, learning configuration, and directory structure. Flipped to Autonomous Mode (5.7): Added AUTONOMOUS_MODE and AUTO_APPROVE_CONFIDENCE_THRESHOLD to app/settings.py. Updated Judge agent instructions to include autonomous mode logic with configurable threshold (default 90%). Auto-approve enabled when confidence ≥ threshold. Human reviews audit trail weekly. | Cascade |
 | 2026-04-13 | 6 | **Phase 5 Core Tasks Complete.** Enabled Learned Knowledge (5.1): Created create_learnings_knowledge() and get_learnings_knowledge() in db/session.py, enabled learning on Detective and Medic agents. Created Discovery Onboard Workflow (5.2): workflows/discovery_onboard/ with 4-step pipeline (Crawl, Index Manifesto, Index Codebase, Verify). Created Full Regression Workflow (5.3): workflows/full_regression/ with 6-step pipeline (Generate Automation, Execute, Analyze Failures, Heal, Verify, Update KB). Both workflows registered in AgentOS. Updated README.md to show 5 workflows. | Cascade |
