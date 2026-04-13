@@ -27,6 +27,7 @@ from agents.judge import judge
 from agents.librarian import librarian
 from agents.medic import medic
 from agents.scribe import scribe
+from agents.technical_tester import technical_tester
 from app.registry import registry
 from app.settings import OLLAMA_MODELS, OLLAMA_MODEL_ID, RUNTIME_ENV, agent_db
 from teams.context import context_team
@@ -40,6 +41,7 @@ from workflows.full_lifecycle import full_lifecycle
 from workflows.full_regression import full_regression
 from workflows.grooming import grooming
 from workflows.spec_to_code import spec_to_code
+from workflows.technical_testing import technical_testing
 from workflows.triage_heal import triage_heal
 
 logger = logging.getLogger(__name__)
@@ -104,6 +106,7 @@ agent_os = AgentOS(
         librarian,
         medic,
         scribe,
+        technical_tester,
     ],
     teams=[
         context_team,
@@ -119,6 +122,7 @@ agent_os = AgentOS(
         full_regression,
         grooming,
         spec_to_code,
+        technical_testing,
         triage_heal,
     ],
     registry=registry,

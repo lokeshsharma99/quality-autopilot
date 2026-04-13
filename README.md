@@ -42,18 +42,18 @@ curl http://localhost:8000/health
 
 ```
 Quality Autopilot
-├── 11 Agents — Architect, Scribe, Discovery, Librarian, Engineer,
+├── 12 Agents — Architect, Scribe, Discovery, Librarian, Engineer,
 │                Data Agent, Detective, Medic, Judge, Healing Judge,
-│                CI Log Analyzer
+│                CI Log Analyzer, Technical Tester
 ├── 5 Squads  — Strategy, Context, Engineering, Operations, Grooming
-├── 6 Flows   — Spec-to-Code, Discovery Onboard, Triage-Heal, Grooming,
-│                Full Regression, Full Lifecycle
+├── 7 Flows   — Spec-to-Code, Discovery Onboard, Triage-Heal, Grooming,
+│                Full Regression, Full Lifecycle, Technical Testing
 └── 11 Contracts — Pydantic hand-off models
 ```
 
 ## Agents
 
-Quality Autopilot uses 11 specialized AI agents, each with a specific Primary Skill and tool set.
+Quality Autopilot uses 12 specialized AI agents, each with a specific Primary Skill and tool set.
 
 ### Architect
 - **Primary Skill:** `semantic_search`
@@ -144,6 +144,15 @@ Quality Autopilot uses 11 specialized AI agents, each with a specific Primary Sk
 - **Output:** RCA findings, Azure DevOps work item (after HITL approval)
 - **Knowledge Base:** RCA knowledge base for storing historical RCA learnings and patterns
 
+### Technical Tester
+- **Primary Skill:** `test_generation`
+- **Role:** Uses Playwright Test Agents (planner, generator, healer) for rapid test generation, smoke tests, and exploratory testing (complements BDD+POM)
+- **Tools:** Playwright CLI tools (init-agents, planner, generator, healer), FileTools, ReasoningTools
+- **When to Use:** AUT onboarding validation, smoke tests, exploratory testing, rapid prototyping before formal BDD
+- **Input:** AUT URL, test requirements
+- **Output:** Playwright tests in automation/technical-tests/, Markdown test plans
+- **Relationship:** Complementary to Engineer agent (technical_tester for rapid testing, Engineer for production BDD+POM)
+
 ## Teams
 
 Quality Autopilot organizes agents into 5 cross-functional squads, each using TeamMode.coordinate for collaboration.
@@ -212,7 +221,7 @@ Quality Autopilot uses 11 Pydantic contracts for structured hand-offs between ag
 
 ## Workflows
 
-Quality Autopilot provides 6 end-to-end workflows for common STLC scenarios.
+Quality Autopilot provides 7 end-to-end workflows for common STLC scenarios.
 
 ### Spec-to-Code Workflow
 - **Purpose:** Convert requirements to automated Playwright tests
@@ -301,6 +310,20 @@ Quality Autopilot provides 6 end-to-end workflows for common STLC scenarios.
 - **Input:** Jira ticket ID or requirement description
 - **Output:** Final report with all phases summarized
 - **When to Use:** Complete STLC orchestration from requirement to report
+
+### Technical Testing Workflow
+- **Purpose:** Generate rapid test suites using Playwright Test Agents for smoke testing, exploratory testing, and AUT validation
+- **Steps:**
+  1. Initialize Playwright Agents (Technical Tester) - Agent definitions
+  2. Create Seed Test (Technical Tester) - Seed test file
+  3. Generate Test Plan (Technical Tester) - Markdown test plan
+  4. Generate Playwright Tests (Technical Tester) - Playwright test files
+  5. Execute Tests (Technical Tester) - Test execution results
+  6. Heal Failures (Technical Tester) - Repaired tests
+- **Input:** AUT URL, test requirements
+- **Output:** Playwright tests in automation/technical-tests/, Markdown test plans
+- **When to Use:** AUT onboarding validation, smoke tests, exploratory testing, rapid prototyping
+- **Note:** Complements BDD+POM workflow (technical_tester for rapid testing, Engineer for production BDD+POM)
 
 ## How to Use
 
