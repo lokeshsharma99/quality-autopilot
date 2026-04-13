@@ -18,6 +18,7 @@ from agno.utils.log import logger
 from app.settings import AUTO_APPROVE_CONFIDENCE_THRESHOLD
 from contracts.test_deletion_approval import (
     ApprovalStatus,
+    BatchTestDeletionApproval,
     DeletionReason,
     TestDeletionApproval,
     TestDeletionAudit,
@@ -86,6 +87,53 @@ def request_deletion_approval(
         logger.info(f"HITL approval required for deletion request {request_id} (confidence: {confidence_score:.2f} < {AUTO_APPROVE_CONFIDENCE_THRESHOLD})")
 
     return f"Deletion request {request_id} created. Status: {approval.status.value} (auto-approved: {auto_approve})"
+
+
+def request_batch_deletion_approval(
+    requests: list[TestDeletionRequest],
+) -> str:
+    """Request HITL approval for batch test deletion.
+
+    Args:
+        requests: List of TestDeletionRequest objects for batch approval
+
+    Returns:
+        Status message with batch ID, approval status, and test case count
+    """
+    batch_id = str(uuid.uuid4())
+
+    # Calculate batch statistics
+    total_count = len(requests)
+    high_confidence_count = sum(1 for r in requests if r.confidence_score >= AUTO_APPROVE_CONFIDENCE_THRESHOLD)
+    low_confidence_count = total_count - high_confidence_count
+
+    # Generate batch summary
+    batch_summary = f"{total_count} test case(s): {high_confidence_count} high-confidence, {low_confidence_count} require review"
+
+    # Check if all items meet auto-approval threshold
+    auto_approve = low_confidence_count == 0 and total_count > 0
+
+    # Create batch approval
+    batch_approval = BatchTestDeletionApproval(
+        batch_id=batch_id,
+        requests=requests,
+        status=ApprovalStatus.APPROVED if auto_approve else ApprovalStatus.PENDING,
+        auto_approved=auto_approve,
+        total_count=total_count,
+        high_confidence_count=high_confidence_count,
+        low_confidence_count=low_confidence_count,
+        batch_summary=batch_summary,
+    )
+
+    if auto_approve:
+        logger.info(f"Auto-approved batch deletion {batch_id} ({batch_summary})")
+        batch_approval.review_timestamp = datetime.utcnow()
+        batch_approval.reviewer = "auto-approve"
+    else:
+        logger.info(f"HITL approval required for batch deletion {batch_id} ({batch_summary})")
+        # In a real implementation, this would trigger OnError.pause with the batch summary
+
+    return f"Batch deletion request {batch_id} created. Status: {batch_approval.status.value}. {batch_summary} (auto-approved: {auto_approve})"
 
 
 def approve_deletion(request_id: str, reviewer: str, comments: Optional[str]) -> str:

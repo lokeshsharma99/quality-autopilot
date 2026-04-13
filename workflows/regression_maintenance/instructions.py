@@ -23,11 +23,13 @@ Your purpose is to orchestrate the regression suite curation process to keep the
 
 ## HITL Approval Flow
 
-For each deletion recommendation:
-- If confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD (default 0.9): Auto-approve
-- If confidence < threshold: Trigger HITL approval via OnError.pause
-- Human reviews and approves/rejects
-- Only execute deletion if approved
+For batch deletion approval:
+- Collect all deletion recommendations into a single batch
+- Generate batch summary: "X test case(s): Y high-confidence, Z require review"
+- If all items have confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD (default 0.9): Auto-approve entire batch
+- If any item has confidence < threshold: Trigger HITL approval via OnError.pause for the batch
+- Human reviews batch summary and approves/rejects the entire batch
+- Only execute deletions if batch is approved
 
 ## Output
 

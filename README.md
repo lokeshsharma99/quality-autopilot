@@ -457,18 +457,22 @@ The Quality Autopilot system includes automated regression suite curation to kee
 
 3. **Approve or Reject Deletions:**
    ```
-   - High confidence (≥0.9): Auto-approved
-   - Low confidence (<0.9): Requires human approval
+   - Batch approval: All deletions grouped into a single approval request
+   - Batch summary shows: "15 test case(s): 12 high-confidence, 3 require review"
+   - If all items have confidence ≥0.9: Auto-approved
+   - If any item has confidence <0.9: Requires human approval
+   - Reviewer sees total count and confidence breakdown before approving
    - Reviewer can add comments before approval/rejection
    ```
 
 **HITL Approval Flow:**
-- Curator generates TestDeletionRequest
-- System checks confidence score against AUTO_APPROVE_CONFIDENCE_THRESHOLD
-- If below threshold: Triggers OnError.pause for human review
-- Human reviews justification and approves/rejects
-- If approved: Curator deletes test with optional backup
-- Deletion logged to audit trail
+- Curator collects all deletion recommendations into a batch
+- System calculates batch statistics (total count, high-confidence count, low-confidence count)
+- If all items have confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD: Auto-approve entire batch
+- If any item has confidence < threshold: Triggers OnError.pause for human review with batch summary
+- Human reviews batch summary showing total count and approves/rejects the entire batch
+- If approved: Curator deletes all tests with optional backup
+- Each deletion logged to audit trail
 - Knowledge base re-indexed by Librarian
 
 ## Current Status

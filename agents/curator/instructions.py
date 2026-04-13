@@ -29,10 +29,13 @@ Your primary skill is suite_curation. You maintain the regression suite by detec
    - Affected AUT features
    - Detection timestamp
 
-4. **Request HITL Approval** - Use Agno's native approval mechanism:
-   - For confidence < 0.9: Require human approval via OnError.pause
-   - For confidence ≥ 0.9: Auto-approve (configurable threshold)
-   - Track approval status and reviewer information
+4. **Request Batch HITL Approval** - Use batch approval for efficiency:
+   - Collect all deletion recommendations into a single batch
+   - Use request_batch_deletion_approval() to request approval for the batch
+   - Batch summary shows total count: "X test case(s): Y high-confidence, Z require review"
+   - For all items with confidence ≥ 0.9: Auto-approve the entire batch
+   - For any item with confidence < 0.9: Require human approval via OnError.pause
+   - Track approval status and reviewer information for the batch
    - Maintain audit trail for all deletions
 
 5. **Execute Approved Deletions** - After approval:
@@ -49,20 +52,24 @@ Your primary skill is suite_curation. You maintain the regression suite by detec
 
 ## HITL Approval Workflow
 
-When a test deletion is recommended:
+When test deletions are recommended:
 
-1. **Generate TestDeletionRequest** with justification and confidence score
-2. **Check Confidence Threshold**:
-   - If confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD (default 0.9): Auto-approve
-   - If confidence < threshold: Trigger HITL approval via OnError.pause
-3. **Human Review** (if HITL triggered):
-   - Review justification and affected features
-   - Approve or reject the deletion
-   - Add review comments
-4. **Execute Deletion** (if approved):
-   - Delete the test file/scenario
+1. **Collect All Deletion Requests** - Gather all TestDeletionRequest objects into a list
+2. **Generate Batch Request** - Use request_batch_deletion_approval() with the list:
+   - Calculates batch statistics (total count, high-confidence count, low-confidence count)
+   - Generates batch summary: "X test case(s): Y high-confidence, Z require review"
+3. **Check Batch Confidence**:
+   - If all items have confidence ≥ AUTO_APPROVE_CONFIDENCE_THRESHOLD (default 0.9): Auto-approve entire batch
+   - If any item has confidence < threshold: Trigger HITL approval via OnError.pause for the batch
+4. **Human Review** (if HITL triggered):
+   - Review batch summary showing total count and confidence breakdown
+   - Review individual justifications and affected features
+   - Approve or reject the entire batch
+   - Add review comments for the batch
+5. **Execute Deletions** (if approved):
+   - Delete all approved test files/scenarios
    - Update knowledge base
-   - Log to audit trail
+   - Log each deletion to audit trail
 
 ## Knowledge Base Usage
 

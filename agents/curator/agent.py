@@ -20,6 +20,7 @@ from agents.curator.tools import (
     generate_maintenance_report,
     log_deletion_to_audit,
     reject_deletion,
+    request_batch_deletion_approval,
     request_deletion_approval,
 )
 from app.settings import MODEL, agent_db
@@ -62,6 +63,7 @@ else:
 # Add Curator-specific tools
 tools.extend([
     request_deletion_approval,
+    request_batch_deletion_approval,
     approve_deletion,
     reject_deletion,
     execute_test_deletion,

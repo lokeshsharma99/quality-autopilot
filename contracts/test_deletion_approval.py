@@ -137,3 +137,44 @@ class ObsolescenceReport(BaseModel):
         default=0,
         description="Number of recommendations with confidence ≥0.9"
     )
+
+
+class BatchTestDeletionApproval(BaseModel):
+    """Batch approval status for multiple test deletion requests."""
+    
+    batch_id: str = Field(..., description="Unique identifier for the batch deletion request")
+    requests: list[TestDeletionRequest] = Field(
+        ...,
+        description="List of test deletion requests in this batch"
+    )
+    status: ApprovalStatus = Field(
+        default=ApprovalStatus.PENDING,
+        description="Current batch approval status"
+    )
+    reviewer: Optional[str] = Field(None, description="Human reviewer who approved/rejected the batch")
+    review_timestamp: Optional[datetime] = Field(None, description="Timestamp of batch review")
+    review_comments: Optional[str] = Field(None, description="Reviewer comments for the batch")
+    auto_approved: bool = Field(
+        default=False,
+        description="Whether the batch was auto-approved (all items ≥ threshold)"
+    )
+    total_count: int = Field(
+        ...,
+        description="Total number of deletion requests in the batch"
+    )
+    high_confidence_count: int = Field(
+        ...,
+        description="Number of requests with confidence ≥0.9"
+    )
+    low_confidence_count: int = Field(
+        ...,
+        description="Number of requests with confidence <0.9"
+    )
+    batch_summary: str = Field(
+        ...,
+        description="Human-readable summary of the batch (e.g., '15 test cases: 12 high-confidence, 3 require review')"
+    )
+    execution_timestamp: Optional[datetime] = Field(
+        None,
+        description="Timestamp when batch deletion was executed"
+    )
