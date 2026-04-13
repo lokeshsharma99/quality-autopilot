@@ -78,6 +78,7 @@ services:
     depends_on:
       - qap-db
       - qap-playwright-mcp
+      - qap-azure-mcp
     networks:
       - qap-net
     extra_hosts:
@@ -115,6 +116,20 @@ services:
     restart: unless-stopped
     ports:
       - "8931:8931"
+    networks:
+      - qap-net
+
+  qap-azure-mcp:
+    image: node:20-alpine
+    container_name: qap-azure-mcp
+    command: npx @azure-devops/mcp-server --port 8932 --host 0.0.0.0
+    environment:
+      - AZURE_DEVOPS_URL=${AZURE_DEVOPS_URL}
+      - AZURE_DEVOPS_PAT=${AZURE_DEVOPS_PAT}
+      - AZURE_DEVOPS_EMAIL=${AZURE_DEVOPS_EMAIL}
+    restart: unless-stopped
+    ports:
+      - "8932:8932"
     networks:
       - qap-net
 

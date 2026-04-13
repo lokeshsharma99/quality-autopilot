@@ -2,7 +2,9 @@
 Azure DevOps Tools
 ==================
 
-Tools for interacting with Azure DevOps API to read CI pipeline logs and create work items.
+Custom tools for Azure DevOps integration.
+Note: Most Azure DevOps operations are now handled via Azure MCP server.
+This file retains only the create_work_item tool for HITL approval.
 """
 
 import base64
@@ -34,167 +36,6 @@ def get_auth_headers() -> dict:
     }
 
 
-@tool
-def get_pipeline_runs(project: str, pipeline_id: str, top: int = 10) -> str:
-    """Fetch recent pipeline runs for a specific pipeline.
-
-    Args:
-        project (str): Azure DevOps project name
-        pipeline_id (str): Pipeline ID or name
-        top (int): Number of recent runs to fetch (default: 10)
-
-    Returns:
-        str: JSON string of pipeline runs with status, timestamps, and run IDs
-    """
-    if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
-        return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
-
-    try:
-        url = f"{AZURE_DEVOPS_URL}/{project}/_apis/pipelines/{pipeline_id}/runs?api-version=7.0&$top={top}"
-        response = httpx.get(url, headers=get_auth_headers())
-        response.raise_for_status()
-        
-        # Parse and simplify the response to reduce context window usage
-        import json
-        data = response.json()
-        
-        # Extract only essential fields
-        simplified_runs = []
-        for run in data.get("value", []):
-            simplified_run = {
-                "id": run.get("id"),
-                "name": run.get("name"),
-                "state": run.get("state"),
-                "result": run.get("result"),
-                "createdDate": run.get("createdDate"),
-                "finishedDate": run.get("finishedDate"),
-                "pipeline_name": run.get("pipeline", {}).get("name"),
-            }
-            simplified_runs.append(simplified_run)
-        
-        return json.dumps({"count": len(simplified_runs), "value": simplified_runs}, indent=2)
-    except Exception as e:
-        return f"Error fetching pipeline runs: {str(e)}"
-
-
-@tool
-def get_pipeline_logs(project: str, pipeline_id: str, run_id: str) -> str:
-    """Fetch logs for a specific pipeline run.
-
-    Args:
-        project (str): Azure DevOps project name
-        pipeline_id (str): Pipeline ID or name
-        run_id (str): Run ID
-
-    Returns:
-        str: Pipeline logs as text
-    """
-    if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
-        return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
-
-    try:
-        url = f"{AZURE_DEVOPS_URL}/{project}/_apis/pipelines/{pipeline_id}/runs/{run_id}/logs?api-version=7.0"
-        response = httpx.get(url, headers=get_auth_headers())
-        response.raise_for_status()
-        return response.text
-    except Exception as e:
-        return f"Error fetching pipeline logs: {str(e)}"
-
-
-@tool
-def get_failed_test_logs(project: str, pipeline_id: str, run_id: str) -> str:
-    """Fetch and filter logs for failed test scripts only (reduces noise).
-
-    Args:
-        project (str): Azure DevOps project name
-        pipeline_id (str): Pipeline ID or name
-        run_id (str): Run ID
-
-    Returns:
-        str: Filtered logs showing only failed test scripts and their error messages
-    """
-    if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
-        return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
-
-    try:
-        # Get all logs first
-        url = f"{AZURE_DEVOPS_URL}/{project}/_apis/pipelines/{pipeline_id}/runs/{run_id}/logs?api-version=7.0"
-        response = httpx.get(url, headers=get_auth_headers())
-        response.raise_for_status()
-        logs = response.text
-
-        # Filter for failed test patterns
-        failed_patterns = [
-            "FAILED",
-            "ERROR",
-            "failed",
-            "error",
-            "AssertionError",
-            "Exception",
-            "Test failed",
-            "test failed",
-        ]
-
-        # Filter logs to only show lines with failure indicators
-        filtered_lines = []
-        for line in logs.split("\n"):
-            if any(pattern.lower() in line.lower() for pattern in failed_patterns):
-                filtered_lines.append(line)
-
-        if not filtered_lines:
-            return "No failed tests found in logs."
-
-        return "\n".join(filtered_lines)
-    except Exception as e:
-        return f"Error fetching failed test logs: {str(e)}"
-
-
-@tool
-def get_build_logs(project: str, build_id: str) -> str:
-    """Fetch build logs for a specific build.
-
-    Args:
-        project (str): Azure DevOps project name
-        build_id (str): Build ID
-
-    Returns:
-        str: Build logs as text
-    """
-    if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
-        return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
-
-    try:
-        url = f"{AZURE_DEVOPS_URL}/{project}/_apis/build/builds/{build_id}/logs?api-version=7.0"
-        response = httpx.get(url, headers=get_auth_headers())
-        response.raise_for_status()
-        return response.text
-    except Exception as e:
-        return f"Error fetching build logs: {str(e)}"
-
-
-@tool
-def get_deployment_logs(project: str, release_id: str) -> str:
-    """Fetch deployment logs for a specific release.
-
-    Args:
-        project (str): Azure DevOps project name
-        release_id (str): Release ID
-
-    Returns:
-        str: Deployment logs as text
-    """
-    if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
-        return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
-
-    try:
-        url = f"{AZURE_DEVOPS_URL}/{project}/_apis/release/releases/{release_id}/deployments?api-version=7.0"
-        response = httpx.get(url, headers=get_auth_headers())
-        response.raise_for_status()
-        return response.text
-    except Exception as e:
-        return f"Error fetching deployment logs: {str(e)}"
-
-
 @approval
 @tool(requires_confirmation=True)
 def create_work_item(
@@ -218,6 +59,7 @@ def create_work_item(
 
     Note:
         This tool requires HITL approval before execution.
+        Other Azure DevOps operations (pipeline runs, logs, etc.) are handled via Azure MCP.
     """
     if not AZURE_DEVOPS_URL or not AZURE_DEVOPS_PAT:
         return "Error: Azure DevOps credentials not configured. Set AZURE_DEVOPS_URL and AZURE_DEVOPS_PAT in .env"
