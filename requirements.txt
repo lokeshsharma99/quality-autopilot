@@ -38,6 +38,9 @@ wikipedia
 # Ollama Embedder
 ollama
 
+# Semantica — Semantic Layer, Decision Intelligence, Provenance
+semantica[agno]
+
 # CI/CD Dependencies
 black
 flake8

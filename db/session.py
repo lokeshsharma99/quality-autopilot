@@ -47,7 +47,7 @@ def create_knowledge(name: str, table_name: str) -> Knowledge:
     Returns:
         Configured Knowledge instance.
     """
-    return Knowledge(
+    knowledge = Knowledge(
         name=name,
         vector_db=PgVector(
             db_url=db_url,
@@ -60,6 +60,22 @@ def create_knowledge(name: str, table_name: str) -> Knowledge:
         ),
         contents_db=get_postgres_db(contents_table=f"{table_name}_contents"),
     )
+
+    # Augment with Semantica context graph if enabled
+    try:
+        from app.semantica_config import SemanticaContext
+
+        if SemanticaContext.is_enabled():
+            context_graph = SemanticaContext.get_context_graph()
+            if context_graph is not None:
+                # Attach context graph to knowledge instance for hybrid search
+                # The graph search runs alongside vector search
+                knowledge._semantica_context_graph = context_graph
+    except ImportError:
+        # Semantica not installed, skip augmentation
+        pass
+
+    return knowledge
 
 
 def create_site_manifesto_knowledge() -> Knowledge:
