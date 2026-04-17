@@ -53,7 +53,7 @@ tools = [
         add_few_shot=True,
     ),
     FileTools(Path("automation")),
-    KnowledgeTools(knowledge=automation_knowledge) if automation_knowledge else None,
+    KnowledgeTools(knowledge=automation_knowledge, search_k=5) if automation_knowledge else None,
     init_playwright_agents,
     create_seed_test,
     run_planner,
