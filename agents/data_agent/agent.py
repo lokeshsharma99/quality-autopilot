@@ -47,7 +47,7 @@ data_agent = SemanticaAgent(
             add_instructions=True,
             add_few_shot=True,
         ),
-        KnowledgeTools(knowledge=get_automation_knowledge(), search_k=5),
+        KnowledgeTools(knowledge=get_automation_knowledge()),
         generate_dynamic_test_user,
         get_test_data_on_demand,
         generate_run_context,

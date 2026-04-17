@@ -50,12 +50,12 @@ tools = [ReasoningTools(
 
 # Knowledge Tools
 if site_manifesto_knowledge is not None:
-    tools.append(KnowledgeTools(knowledge=site_manifesto_knowledge, search_k=5))
+    tools.append(KnowledgeTools(knowledge=site_manifesto_knowledge))
 else:
     logger.warning("Architect: Skipping Site Manifesto KnowledgeTools due to None knowledge base")
 
 if automation_knowledge is not None:
-    tools.append(KnowledgeTools(knowledge=automation_knowledge, search_k=5))
+    tools.append(KnowledgeTools(knowledge=automation_knowledge))
 else:
     logger.warning("Architect: Skipping Automation KnowledgeTools due to None knowledge base")
 

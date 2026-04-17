@@ -43,7 +43,7 @@ librarian = SemanticaAgent(
             add_instructions=True,
             add_few_shot=True,
         ),
-        KnowledgeTools(knowledge=get_automation_knowledge(), search_k=5),
+        KnowledgeTools(knowledge=get_automation_knowledge()),
         index_automation_codebase,
         check_and_re_index_changes,
         get_file_statistics,

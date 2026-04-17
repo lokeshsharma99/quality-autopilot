@@ -70,7 +70,7 @@ engineer_tools = [
 
 # Add KnowledgeTools if knowledge base is available
 if automation_knowledge:
-    engineer_tools.append(KnowledgeTools(knowledge=automation_knowledge, search_k=5))
+    engineer_tools.append(KnowledgeTools(knowledge=automation_knowledge))
 
 # Add Playwright MCP tools if available
 if playwright_mcp:
