@@ -44,7 +44,7 @@ scribe = SemanticaAgent(
             add_few_shot=True,
         ),
         FileTools(Path("automation")),
-        KnowledgeTools(knowledge=get_automation_knowledge()),
+        KnowledgeTools(knowledge=get_automation_knowledge(), search_k=5),
     ],
 
     # Instructions

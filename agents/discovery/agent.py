@@ -53,7 +53,7 @@ discovery = SemanticaAgent(
             add_instructions=True,
             add_few_shot=True,
         ),
-        KnowledgeTools(knowledge=get_site_manifesto_knowledge()),
+        KnowledgeTools(knowledge=get_site_manifesto_knowledge(), search_k=5),
     ],
 
     # Instructions

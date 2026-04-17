@@ -57,7 +57,7 @@ tools = [
 
 # Add KnowledgeTools if knowledge base is available
 if automation_knowledge is not None:
-    tools.append(KnowledgeTools(knowledge=automation_knowledge))
+    tools.append(KnowledgeTools(knowledge=automation_knowledge, search_k=5))
 else:
     logger.warning("Curator: Skipping KnowledgeTools due to None knowledge base")
 
