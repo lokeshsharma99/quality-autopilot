@@ -35,6 +35,7 @@ MODEL = OpenAILike(
     id=OLLAMA_MODEL_ID,
     api_key=OLLAMA_API_KEY,
     base_url=f"{OLLAMA_BASE_URL}/v1",
+    streaming=True,
 )
 
 # Smaller/faster model for lightweight tasks
@@ -42,6 +43,7 @@ MODEL_MINI = OpenAILike(
     id=OLLAMA_MODEL_ID,
     api_key=OLLAMA_API_KEY,
     base_url=f"{OLLAMA_BASE_URL}/v1",
+    streaming=True,
 )
 
 def get_model(model_id: str | None = None) -> OpenAILike:
@@ -59,6 +61,7 @@ def get_model(model_id: str | None = None) -> OpenAILike:
         id=model_id,
         api_key=OLLAMA_API_KEY,
         base_url=f"{OLLAMA_BASE_URL}/v1",
+        streaming=True,
     )
 
 # ---------------------------------------------------------------------------
