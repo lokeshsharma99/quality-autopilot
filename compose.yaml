@@ -1,0 +1,111 @@
+services:
+  qap-db:
+    image: agnohq/pgvector:18
+    container_name: qap-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-ai}
+      POSTGRES_PASSWORD: ${DB_PASS:-ai}
+      POSTGRES_DB: ${DB_DATABASE:-ai}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - qap-net
+
+  qap-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qap-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload: mount source code
+      - .:/app
+      # Generated code volume
+      - generated_code:/app/generated
+    environment:
+      - RUNTIME_ENV=dev
+      - AGNO_DEBUG=True
+      - PYTHONPATH=/app
+      - AGENTOS_URL=http://127.0.0.1:8000
+      # Database
+      - DB_HOST=qap-db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-ai}
+      - DB_PASS=${DB_PASS:-ai}
+      - DB_DATABASE=${DB_DATABASE:-ai}
+      - WAIT_FOR_DB=True
+      - PRINT_ENV_ON_LOAD=${PRINT_ENV_ON_LOAD:-False}
+      # LLM / Inference (Kilo AI Gateway — OpenRouter-compatible)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-anonymous}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://api.kilo.ai/api/openrouter/v1}
+      - KILO_API_KEY=${KILO_API_KEY:-anonymous}
+      - KILO_API_URL=${KILO_API_URL:-https://api.kilo.ai}
+      # Ollama (local embeddings via host machine)
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      # GitHub (Engineer agent — PR creation)
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # AUT (Application Under Test)
+      - AUT_BASE_URL=${AUT_BASE_URL:-https://gds-demo-app.vercel.app/}
+      - AUT_AUTH_USER=${AUT_AUTH_USER:-}
+      - AUT_AUTH_PASS=${AUT_AUTH_PASS:-}
+      # Jira (Architect agent — ticket parsing)
+      - JIRA_URL=${JIRA_URL:-}
+      - JIRA_USERNAME=${JIRA_USERNAME:-}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
+      # Azure DevOps (optional alternative to Jira)
+      - AZURE_DEVOPS_URL=${AZURE_DEVOPS_URL:-}
+      - AZURE_DEVOPS_PAT=${AZURE_DEVOPS_PAT:-}
+      # MCP Servers
+      - PLAYWRIGHT_MCP_URL=http://playwright-mcp:8931
+      # Optional
+      - EXA_API_KEY=${EXA_API_KEY:-}
+      - PARALLEL_API_KEY=${PARALLEL_API_KEY:-}
+    depends_on:
+      - qap-db
+    networks:
+      - qap-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ---------------------------------------------------------------------------
+  # Playwright MCP Server  (browser automation for Discovery + Engineer agents)
+  # Start with: docker compose --profile mcp up -d
+  # ---------------------------------------------------------------------------
+  playwright-mcp:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    container_name: playwright-mcp
+    command: npx -y @playwright/mcp@latest --port 8931 --host 0.0.0.0
+    restart: unless-stopped
+    ports:
+      - "8931:8931"
+    networks:
+      - qap-net
+    profiles:
+      - mcp
+
+  # ---------------------------------------------------------------------------
+  # Playwright Test Runner  (sandboxed execution for automation/ tests)
+  # Start with: docker compose --profile runner up -d
+  # ---------------------------------------------------------------------------
+  qap-playwright:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    container_name: qap-playwright
+    working_dir: /tests
+    volumes:
+      - ./test-output:/tests
+    network_mode: "none"
+    profiles:
+      - runner
+
+networks:
+  qap-net:
+
+volumes:
+  pgdata:
+  generated_code:

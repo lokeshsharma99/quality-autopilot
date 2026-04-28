@@ -1,0 +1,85 @@
+# ===========================================================================
+# Quality Autopilot — .gitignore
+# ===========================================================================
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Environment — keep example.env, ignore all real .env files
+.env
+.env.*
+!example.env
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker volumes
+pgdata/
+
+# Logs
+*.log
+logs/
+
+# Test output
+test-output/
+playwright-report/
+test-results/
+trace.zip
+
+# Node
+node_modules/
+.next/
+.pnpm-store/
+
+# Generated code
+generated/
+
+# Scraped/crawled artefacts (temp research outputs — never commit)
+bundle.js
+*.bundle.js
+api_results.json
+api_full_results.json
+
+# Temporary investigation / one-off scripts (do not commit)
+crawl_api.py
+extract_api.py
+extract_ui.py
+inspect_html.py
+probe_api.py
+probe_full.py
+test_auth.py
+write_docs.py
+
+# Accidentally copied env files
+.env copy
+*.env.bak
+
+# External reference repositories (read-only, not part of QAP)
+reference/
+scout/
+
+# Python compiled files
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+*.manifest
+*.spec

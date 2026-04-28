@@ -1,0 +1,48 @@
+# Python
+.venv
+venv*
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.tox
+
+# Git
+.git
+.gitignore
+
+# Reference repos (not needed in container)
+reference/
+
+# Node (automation framework — not needed in API container)
+automation/node_modules/
+automation/.playwright/
+
+# Test output
+test-output/
+generated/
+
+# Env files (secrets must come from environment, not build context)
+.env
+.env.*
+!.env.example
+example.env
+
+# IDE
+.vscode
+.idea
+.DS_Store
+*.swp
+
+# Docker
+docker-compose.yml
+
+# Docs
+docs/
+*.md
+
+# Logs
+*.log

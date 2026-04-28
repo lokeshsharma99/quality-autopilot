@@ -1,0 +1,46 @@
+chat:
+  quick_prompts:
+    discovery:
+      - "Crawl https://gds-demo-app.vercel.app/"
+      - "What pages are available on the AUT?"
+      - "Generate the Site Manifesto for the GDS demo app"
+
+    architect:
+      - "Analyze requirement: Implement user login with email and password"
+      - "Parse this Jira ticket and identify affected Page Objects"
+      - "What is the impact of adding a checkout page to the AUT?"
+
+    scribe:
+      - "Write Gherkin scenarios for the login feature"
+      - "Generate BDD steps for the registration flow"
+      - "Create a feature file for the shopping cart"
+
+    engineer:
+      - "Generate a Page Object for the login page"
+      - "Create step definitions for the checkout feature"
+      - "Write a POM for the navigation bar"
+
+    librarian:
+      - "Index the automation codebase"
+      - "Find the Page Object for the login button"
+      - "What step definitions exist for authentication?"
+
+    data_agent:
+      - "Create test users for the checkout scenario"
+      - "Generate run_context for the registration test"
+      - "Provision fresh test data for feature CHECKOUT-001"
+
+    detective:
+      - "Analyze this test failure trace"
+      - "Classify the failure in test_login_001"
+      - "What is the root cause of the CI failure?"
+
+    medic:
+      - "Heal the broken login button locator"
+      - "Fix the stale selector in LoginPage.ts"
+      - "Update the outdated locator in CheckoutPage.ts"
+
+    judge:
+      - "Review this Gherkin spec against the DoD checklist"
+      - "Evaluate the quality of this Page Object"
+      - "Is this healing patch safe to auto-approve?"

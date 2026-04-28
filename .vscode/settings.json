@@ -1,0 +1,9 @@
+{
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "chat.tools.terminal.autoApprove": {
+        "/^uv pip compile pyproject\\.toml -o requirements\\.txt --python 3\\.12 2>&1 \\| Select-Object -First 20$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

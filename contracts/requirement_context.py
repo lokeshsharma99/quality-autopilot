@@ -1,0 +1,29 @@
+"""
+RequirementContext Contract
+============================
+
+Architect agent output — the Execution Plan.
+Every pipeline starts here. All acceptance criteria must be captured.
+"""
+
+from pydantic import BaseModel
+
+
+class AcceptanceCriterion(BaseModel):
+    id: str                         # e.g., "AC-001"
+    description: str
+    testable: bool
+
+
+class RequirementContext(BaseModel):
+    """Also referred to as the 'Execution Plan' — the Architect's output."""
+
+    ticket_id: str                          # Jira/ADO ticket ID
+    title: str
+    description: str
+    acceptance_criteria: list[AcceptanceCriterion]
+    priority: str                           # P0, P1, P2, P3
+    component: str                          # e.g., "checkout", "auth", "dashboard"
+    source_url: str                         # Link to original ticket
+    affected_page_objects: list[str]        # POMs the Architect determined will be affected
+    is_new_feature: bool                    # True if no existing coverage found in KB

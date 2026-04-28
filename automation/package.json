@@ -1,0 +1,23 @@
+{
+  "name": "quality-autopilot-automation",
+  "version": "1.0.0",
+  "description": "BDD + Page Object Model automation framework for Quality Autopilot",
+  "scripts": {
+    "test": "cucumber-js --config cucumber.conf.ts",
+    "test:headed": "HEADLESS=false cucumber-js --config cucumber.conf.ts",
+    "test:report": "cucumber-js --config cucumber.conf.ts --format html:reports/cucumber-report.html",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.52.0"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

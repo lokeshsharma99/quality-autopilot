@@ -1,0 +1,1 @@
+"""Quality Autopilot — App Module."""
